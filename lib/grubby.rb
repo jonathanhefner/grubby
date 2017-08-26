@@ -1,5 +1,1 @@
-require "grubby/version"
-
-module Grubby
-  # Your code goes here...
-end
+require_relative "grubby/version"
