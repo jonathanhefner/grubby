@@ -7,3 +7,4 @@ require "mini_sanity"
 require "pleasant_path"
 
 require_relative "grubby/version"
+require_relative "grubby/log"
