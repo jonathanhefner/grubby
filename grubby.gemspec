@@ -20,6 +20,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency "activesupport", "~> 5.0"
+  spec.add_runtime_dependency "casual_support", "~> 3.0"
+  spec.add_runtime_dependency "dumb_delimited", "~> 1.0"
+  spec.add_runtime_dependency "gorge", "~> 1.0"
+  spec.add_runtime_dependency "mechanize", "~> 2.7"
+  spec.add_runtime_dependency "mini_sanity", "~> 1.0"
+  spec.add_runtime_dependency "pleasant_path", "~> 1.1"
+
   spec.add_development_dependency "bundler", "~> 1.15"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest", "~> 5.0"
