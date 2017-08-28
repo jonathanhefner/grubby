@@ -8,3 +8,4 @@ require "pleasant_path"
 
 require_relative "grubby/version"
 require_relative "grubby/log"
+require_relative "grubby/mechanize/fetch_with_retry"
