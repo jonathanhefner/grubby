@@ -7,6 +7,11 @@ class MechanizePageTest < Mechanize::TestCase
     assert_equal "good2", results.first.attr("id")
   end
 
+  def test_atbang_with_multiple_matching
+    result = make_page.at!("#good3", "#good2")
+    assert_equal "good3", result.attr("id")
+  end
+
 
   private
 

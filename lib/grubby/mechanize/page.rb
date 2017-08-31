@@ -7,4 +7,11 @@ class Mechanize::Page
   # @return [Array<Nokogiri::XML::Element>]
   def_delegators :parser, :search!
 
+  # @!method at!(*queries)
+  # See {::Nokogiri::XML::Searchable#at!}.
+  #
+  # @param queries [Array<String>]
+  # @return [Nokogiri::XML::Element]
+  def_delegators :parser, :at!
+
 end
