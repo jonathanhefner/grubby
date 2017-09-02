@@ -20,6 +20,12 @@ require_relative "grubby/nokogiri/searchable"
 
 class Grubby < Mechanize
 
+  # @return [Integer, Float, Range<Integer>, Range<Float>]
+  #   The enforced minimum amount of time to wait between requests, in
+  #   seconds.  If the value is a Range, a random number within the
+  #   Range is chosen for each request.
+  attr_accessor :time_between_requests
+
   def initialize
     super()
 
@@ -42,6 +48,23 @@ class Grubby < Mechanize
     self.pluggable_parser.default = Mechanize::Download
     self.pluggable_parser["text/plain"] = Mechanize::File
     self.pluggable_parser["application/json"] = Mechanize::File
+
+    # Set up configurable rate limiting, and choose a reasonable default
+    # rate limit.
+    self.pre_connect_hooks << Proc.new{ self.send(:sleep_between_requests) }
+    self.time_between_requests = 1.0
+  end
+
+
+  private
+
+  def sleep_between_requests
+    @last_request_at ||= 0.0
+    delay_duration = @time_between_requests.is_a?(Range) ?
+      rand(@time_between_requests) : @time_between_requests
+    sleep_duration = @last_request_at + delay_duration - Time.now.to_f
+    sleep(sleep_duration) if sleep_duration > 0
+    @last_request_at = Time.now.to_f
   end
 
 end
