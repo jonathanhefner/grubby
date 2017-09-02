@@ -70,6 +70,62 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
+  def test_singleton_with_different_pages
+    requested_uris = make_uris(2)
+    requested_uris.last.path = "/form_test.html"
+
+    assert_equal requested_uris, do_singleton_visited_uris(requested_uris)
+  end
+
+  def test_singleton_with_same_url
+    requested_uris = make_uris(1) * 2
+
+    assert_equal requested_uris.uniq, do_singleton_visited_uris(requested_uris)
+  end
+
+  def test_singleton_with_same_content
+    requested_uris = make_uris(2)
+
+    assert_equal requested_uris.take(1), do_singleton_visited_uris(requested_uris)
+  end
+
+  def test_singleton_with_different_purposes
+    purposes = 3.times.map{|i| "purpose #{i}" }
+    requested_uris = make_uris(1) * purposes.length
+
+    assert_equal requested_uris, do_singleton_visited_uris(requested_uris.zip(purposes))
+  end
+
+  def test_singleton_journal
+    requested_uris = make_uris
+
+    in_tmpdir do
+      refute_empty do_singleton_visited_uris(requested_uris, "journal.txt")
+      assert_empty do_singleton_visited_uris(requested_uris, "journal.txt")
+    end
+  end
+
+  def test_singleton_journal_with_different_pages
+    requested_uris = make_uris(2)
+    requested_uris.last.path = "/form_test.html"
+
+    in_tmpdir do
+      refute_empty do_singleton_visited_uris(requested_uris.take(1), "journal.txt")
+      refute_empty do_singleton_visited_uris(requested_uris.drop(1), "journal.txt")
+    end
+  end
+
+  def test_singleton_journal_with_different_purposes
+    purposes = 3.times.map{|i| "purpose #{i}" }
+    requested_uris = make_uris(1) * purposes.length
+    requested = requested_uris.zip(purposes)
+
+    in_tmpdir do
+      refute_empty do_singleton_visited_uris(requested, "journal.txt")
+      assert_empty do_singleton_visited_uris(requested, "journal.txt")
+    end
+  end
+
 
   private
 
@@ -87,6 +143,22 @@ class GrubbyTest < Mechanize::TestCase
     silence_logging do
       Grubby.new.get_mirrored(mirror_uris).uri
     end
+  end
+
+  def do_singleton_visited_uris(requested, journal = nil)
+    visited_uris = []
+
+    silence_logging do
+      grubby = Grubby.new(journal)
+      requested.each do |r|
+        previous_count = visited_uris.length
+        singleton_args = r.is_a?(Array) ? r : [r]
+        visited = grubby.singleton(*singleton_args){|page| visited_uris << page.uri }
+        assert_equal (visited_uris.length > previous_count), !!visited
+      end
+    end
+
+    visited_uris
   end
 
 end

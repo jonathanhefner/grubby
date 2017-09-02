@@ -26,7 +26,11 @@ class Grubby < Mechanize
   #   Range is chosen for each request.
   attr_accessor :time_between_requests
 
-  def initialize
+  # @param singleton_journal [Pathname, String]
+  #   Optional journal file to persist the list of resources processed
+  #   by {singleton}.  Useful to ensure only-once processing across
+  #   multiple program runs.
+  def initialize(singleton_journal = nil)
     super()
 
     # Prevent "memory leaks", and prevent mistakenly blank urls from
@@ -53,6 +57,11 @@ class Grubby < Mechanize
     # rate limit.
     self.pre_connect_hooks << Proc.new{ self.send(:sleep_between_requests) }
     self.time_between_requests = 1.0
+
+    @journal = singleton_journal ?
+      singleton_journal.to_pathname.touch_file : Pathname::NULL
+    @seen = SingletonKey.parse_file(@journal).
+      group_by(&:purpose).transform_values{|sks| sks.map(&:key).index_to{ true } }
   end
 
   # Calls +#get+ with each of +mirror_uris+ until a successful
@@ -80,8 +89,66 @@ class Grubby < Mechanize
     end
   end
 
+  # Ensures only-once processing of the resource indicated by +target+
+  # for the specified +purpose+.  A list of previously-processed
+  # resource URIs and content hashes is maintained in the Grubby
+  # instance.  The given block is called with the fetched resource only
+  # if the resource's URI and the resource's content hash have not been
+  # previously processed under the specified +purpose+.
+  #
+  # @param target [URI, String, Mechanize::Page::Link, #to_absolute_uri]
+  #   designates the resource to fetch
+  # @param purpose [String]
+  #   the purpose of processing the resource
+  # @yield [resource]
+  #   processes the resource
+  # @yieldparam resource [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
+  #   the fetched resource
+  # @return [Boolean]
+  #   whether the given block was called
+  # @raise [Mechanize::ResponseCodeError]
+  #   if fetching the resource results in error (see +Mechanize#get+)
+  def singleton(target, purpose = "")
+    series = []
+
+    original_url = target.to_absolute_uri
+    return if skip_singleton?(purpose, original_url.to_s, series)
+
+    url = normalize_url(original_url)
+    return if skip_singleton?(purpose, url.to_s, series)
+
+    $log.info("Fetching #{url}")
+    resource = get(url)
+    skip = skip_singleton?(purpose, resource.uri.to_s, series) |
+      skip_singleton?(purpose, "content hash: #{resource.content_hash}", series)
+
+    yield resource unless skip
+
+    series.map{|k| SingletonKey.new(purpose, k) }.append_to_file(@journal)
+
+    !skip
+  end
+
 
   private
+
+  SingletonKey = DumbDelimited[:purpose, :key]
+
+  def skip_singleton?(purpose, key, series)
+    return false if series.include?(key)
+    series << key
+    already = (@seen[purpose.to_s] ||= {}).displace(key, true)
+    $log.info("Skipping #{series.first} (already seen #{series.last})") if already
+    already
+  end
+
+  def normalize_url(url)
+    url = url.dup
+    $log.warn("Discarding fragment in URL: #{url}") if url.fragment
+    url.fragment = nil
+    url.path = url.path.chomp("/")
+    url
+  end
 
   def sleep_between_requests
     @last_request_at ||= 0.0
