@@ -55,6 +55,31 @@ class Grubby < Mechanize
     self.time_between_requests = 1.0
   end
 
+  # Calls +#get+ with each of +mirror_uris+ until a successful
+  # ("200 OK") response is recieved, and returns that +#get+ result.
+  # Rescues and logs +Mechanize::ResponseCodeError+ failures for all but
+  # the last mirror.
+  #
+  # @param mirror_uris [Array<String>]
+  # @return [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
+  # @raise [Mechanize::ResponseCodeError]
+  #   if all +mirror_uris+ fail
+  def get_mirrored(mirror_uris, parameters = [], referer = nil, headers = {})
+    i = 0
+    begin
+      get(mirror_uris[i], parameters, referer, headers)
+    rescue Mechanize::ResponseCodeError => e
+      i += 1
+      if i >= mirror_uris.length
+        raise
+      else
+        $log.info("Mirror failed with response code #{e.response_code}: #{mirror_uris[i - 1]}")
+        $log.debug("Trying next mirror: #{mirror_uris[i]}")
+        retry
+      end
+    end
+  end
+
 
   private
 

@@ -30,3 +30,19 @@ module Kernel
   alias_method :sleep, :dont_sleep
 
 end
+
+
+class Minitest::Test
+
+  def silence_logging
+    log_level = $log.level
+    $log.level = Logger::Severity::FATAL
+    begin
+      result = yield
+    ensure
+      $log.level = log_level
+    end
+    result
+  end
+
+end
