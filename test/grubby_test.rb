@@ -126,6 +126,12 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
+  def test_json_pluggable_parser
+    grubby = Grubby.new
+
+    assert_equal Grubby::JsonParser, grubby.pluggable_parser["application/json"]
+  end
+
 
   private
 

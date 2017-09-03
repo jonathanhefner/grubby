@@ -51,7 +51,7 @@ class Grubby < Mechanize
     self.max_file_buffer = 1_000_000 # only applies to Mechanize::Download
     self.pluggable_parser.default = Mechanize::Download
     self.pluggable_parser["text/plain"] = Mechanize::File
-    self.pluggable_parser["application/json"] = Mechanize::File
+    self.pluggable_parser["application/json"] = Grubby::JsonParser
 
     # Set up configurable rate limiting, and choose a reasonable default
     # rate limit.
@@ -163,3 +163,4 @@ end
 
 
 require_relative "grubby/version"
+require_relative "grubby/json_parser"
