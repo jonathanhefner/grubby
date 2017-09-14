@@ -15,6 +15,7 @@ require_relative "grubby/mechanize/download"
 require_relative "grubby/mechanize/file"
 require_relative "grubby/mechanize/link"
 require_relative "grubby/mechanize/page"
+require_relative "grubby/nokogiri/node"
 require_relative "grubby/nokogiri/searchable"
 
 

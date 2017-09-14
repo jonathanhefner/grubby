@@ -72,6 +72,8 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [#page](http://www.rubydoc.info/gems/grubby/Grubby/PageScraper:page)
 - [JsonScraper](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper)
   - [#json](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper:json)
+- Nokogiri::XML::Node
+  - [#text!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Node:text%21)
 - Nokogiri::XML::Searchable
   - [#at!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Searchable:at%21)
   - [#search!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Searchable:search%21)
