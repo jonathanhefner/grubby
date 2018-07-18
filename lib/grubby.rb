@@ -6,6 +6,7 @@ require "mechanize"
 require "mini_sanity"
 require "pleasant_path"
 
+require_relative "grubby/version"
 require_relative "grubby/log"
 
 require_relative "grubby/core_ext/string"
@@ -20,6 +21,8 @@ require_relative "grubby/nokogiri/searchable"
 
 
 class Grubby < Mechanize
+
+  VERSION = GRUBBY_VERSION
 
   # @return [Integer, Float, Range<Integer>, Range<Float>]
   #   The enforced minimum amount of time to wait between requests, in
@@ -163,7 +166,6 @@ class Grubby < Mechanize
 end
 
 
-require_relative "grubby/version"
 require_relative "grubby/json_parser"
 require_relative "grubby/scraper"
 require_relative "grubby/page_scraper"

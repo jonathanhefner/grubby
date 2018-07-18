@@ -8,9 +8,6 @@ end
 
 desc "Launch IRB with this gem pre-loaded"
 task :irb do
-  # HACK because lib/grubby/version is prematurely loaded by bundler/gem_tasks
-  Object.send(:remove_const, :Grubby)
-
   require "grubby"
   require "irb"
   ARGV.clear

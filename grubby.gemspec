@@ -5,7 +5,7 @@ require "grubby/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "grubby"
-  spec.version       = Grubby::VERSION
+  spec.version       = GRUBBY_VERSION
   spec.authors       = ["Jonathan Hefner"]
   spec.email         = ["jonathan.hefner@gmail.com"]
 
