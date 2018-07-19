@@ -72,11 +72,6 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [#page](http://www.rubydoc.info/gems/grubby/Grubby/PageScraper:page)
 - [JsonScraper](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper)
   - [#json](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper:json)
-- Nokogiri::XML::Node
-  - [#text!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Node:text%21)
-- Nokogiri::XML::Searchable
-  - [#at!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Searchable:at%21)
-  - [#search!](http://www.rubydoc.info/gems/grubby/Nokogiri/XML/Searchable:search%21)
 - Mechanize::Page
   - [#at!](http://www.rubydoc.info/gems/grubby/Mechanize/Page:at%21)
   - [#search!](http://www.rubydoc.info/gems/grubby/Mechanize/Page:search%21)
@@ -86,10 +81,9 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
 
 ## Supplemental API
 
-*grubby* uses several gems which extend core Ruby objects with
-convenience methods.  When you import *grubby* you automatically make
-these methods available.  See each gem below for its specific API
-documentation:
+*grubby* uses several gems which extend Ruby objects with convenience
+methods.  When you load *grubby* you automatically make these methods
+available.  See each gem below for its specific API documentation:
 
 - [Active Support](https://rubygems.org/gems/activesupport)
   ([docs](http://www.rubydoc.info/gems/activesupport/))
@@ -101,6 +95,8 @@ documentation:
   ([docs](http://www.rubydoc.info/gems/mini_sanity/))
 - [pleasant_path](https://rubygems.org/gems/pleasant_path)
   ([docs](http://www.rubydoc.info/gems/pleasant_path/))
+- [ryoba](https://rubygems.org/gems/ryoba)
+  ([docs](http://www.rubydoc.info/gems/ryoba/))
 
 
 ## Installation
