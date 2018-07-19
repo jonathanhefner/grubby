@@ -9,9 +9,8 @@ class Mechanize::HTTP::Agent
   IDEMPOTENT_HTTP_METHODS = [:get, :head, :options, :delete]
 
   # Replacement for +Mechanize::HTTP::Agent#fetch+.  When a "too many
-  # connection resets" error is encountered, this method shuts down the
-  # persistent HTTP connection, and then retries the request (upto
-  # {MAX_CONNECTION_RESET_RETRIES} times).
+  # connection resets" error is encountered, this method retries the
+  # request (upto {MAX_CONNECTION_RESET_RETRIES} times).
   def fetch_with_retry(uri, http_method = :get, headers = {}, params = [], referer = current_page, redirects = 0)
     retry_count = 0
     begin
@@ -27,8 +26,7 @@ class Mechanize::HTTP::Agent
       # otherwise, shutdown the persistent HTTP connection and try again
       retry_count += 1
       $log.warn("Possible connection reset bug.  Retry(#{retry_count}) #{http_method.to_s.upcase} #{uri}")
-      self.http.shutdown
-      sleep(retry_count) # incremental backoff in case problem is with server
+      sleep(retry_count) # incremental backoff to allow server to self-correct
       retry
     end
   end
