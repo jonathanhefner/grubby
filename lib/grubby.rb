@@ -83,8 +83,8 @@ class Grubby < Mechanize
       if i >= mirror_uris.length
         raise
       else
-        $log.info("Mirror failed with response code #{e.response_code}: #{mirror_uris[i - 1]}")
-        $log.debug("Trying next mirror: #{mirror_uris[i]}")
+        $log.debug("Mirror failed (code #{e.response_code}): #{mirror_uris[i - 1]}")
+        $log.debug("Try mirror: #{mirror_uris[i]}")
         retry
       end
     end
@@ -118,7 +118,7 @@ class Grubby < Mechanize
     normalized_uri = normalize_uri(original_uri)
     return if try_skip_singleton(normalized_uri, purpose, series)
 
-    $log.info("Fetching #{normalized_uri}")
+    $log.info("Fetch #{normalized_uri}")
     resource = get(normalized_uri)
     skip = try_skip_singleton(resource.uri, purpose, series) |
       try_skip_singleton("content hash: #{resource.content_hash}", purpose, series)
@@ -138,14 +138,15 @@ class Grubby < Mechanize
   def try_skip_singleton(target, purpose, series)
     series << SingletonKey.new(purpose, target.to_s)
     if series.uniq!.nil? && @seen.displace(series.last, true)
-      $log.info("Skipping #{series.first.target} (already seen #{series.last.target})")
+      seen_info = series.length > 1 ? "seen #{series.last.target}" : "seen"
+      $log.info("Skip #{series.first.target} (#{seen_info})")
       true
     end
   end
 
   def normalize_uri(uri)
     uri = uri.dup
-    $log.warn("Discarding fragment in URL: #{uri}") if uri.fragment
+    $log.warn("Ignore ##{uri.fragment} in #{uri}") if uri.fragment
     uri.fragment = nil
     uri.path = uri.path.chomp("/")
     uri

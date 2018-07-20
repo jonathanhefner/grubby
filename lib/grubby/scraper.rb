@@ -29,7 +29,7 @@ class Grubby::Scraper
           value = instance_eval(&block)
           if value.nil?
             raise "`#{field}` cannot be nil" unless optional
-            $log.debug("Scraped nil value for #{self.class}##{field}")
+            $log.debug("#{self.class}##{field} is nil")
           end
           @scraped[field] = value
         rescue RuntimeError => e

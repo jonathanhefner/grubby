@@ -29,7 +29,7 @@ class FetchWithRetryTest < Mechanize::TestCase
     out, err = capture_subprocess_io do
       assert_instance_of Mechanize::Page, do_fetch
     end
-    assert_equal max_retries, (out + err).scan(/retry/i).length
+    assert_equal max_retries, (out + err).scan(/retry in \d+ seconds?/i).length
   end
 
   def test_fetch_fails_after_max_retries
@@ -41,7 +41,7 @@ class FetchWithRetryTest < Mechanize::TestCase
     out, err = capture_subprocess_io do
       assert_raises(Net::HTTP::Persistent::Error) { do_fetch }
     end
-    assert_equal max_retries, (out + err).scan(/retry/i).length
+    assert_equal max_retries, (out + err).scan(/retry in \d+ seconds?/i).length
   end
 
   def test_fetch_reraises_other_errors
