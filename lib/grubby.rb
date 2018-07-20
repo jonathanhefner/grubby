@@ -61,10 +61,8 @@ class Grubby < Mechanize
     self.pre_connect_hooks << Proc.new{ self.send(:sleep_between_requests) }
     self.time_between_requests = 1.0
 
-    @journal = singleton_journal ?
-      singleton_journal.to_pathname.touch_file : Pathname::NULL
-    @seen = SingletonKey.parse_file(@journal).
-      group_by(&:purpose).transform_values{|sks| sks.map(&:key).index_to{ true } }
+    @journal = singleton_journal.try(&:to_pathname).try(&:touch_file)
+    @seen = @journal ? SingletonKey.parse_file(@journal).index_to{ true } : {}
   end
 
   # Calls +#get+ with each of +mirror_uris+ until a successful
@@ -114,20 +112,20 @@ class Grubby < Mechanize
   def singleton(target, purpose = "")
     series = []
 
-    original_url = target.to_absolute_uri
-    return if skip_singleton?(purpose, original_url.to_s, series)
+    original_uri = target.to_absolute_uri
+    return if try_skip_singleton(original_uri, purpose, series)
 
-    url = normalize_url(original_url)
-    return if skip_singleton?(purpose, url.to_s, series)
+    normalized_uri = normalize_uri(original_uri)
+    return if try_skip_singleton(normalized_uri, purpose, series)
 
-    $log.info("Fetching #{url}")
-    resource = get(url)
-    skip = skip_singleton?(purpose, resource.uri.to_s, series) |
-      skip_singleton?(purpose, "content hash: #{resource.content_hash}", series)
+    $log.info("Fetching #{normalized_uri}")
+    resource = get(normalized_uri)
+    skip = try_skip_singleton(resource.uri, purpose, series) |
+      try_skip_singleton("content hash: #{resource.content_hash}", purpose, series)
 
     yield resource unless skip
 
-    series.map{|k| SingletonKey.new(purpose, k) }.append_to_file(@journal)
+    series.append_to_file(@journal) if @journal
 
     !skip
   end
@@ -135,22 +133,22 @@ class Grubby < Mechanize
 
   private
 
-  SingletonKey = DumbDelimited[:purpose, :key]
+  SingletonKey = DumbDelimited[:purpose, :target]
 
-  def skip_singleton?(purpose, key, series)
-    return false if series.include?(key)
-    series << key
-    already = (@seen[purpose.to_s] ||= {}).displace(key, true)
-    $log.info("Skipping #{series.first} (already seen #{series.last})") if already
-    already
+  def try_skip_singleton(target, purpose, series)
+    series << SingletonKey.new(purpose, target.to_s)
+    if series.uniq!.nil? && @seen.displace(series.last, true)
+      $log.info("Skipping #{series.first.target} (already seen #{series.last.target})")
+      true
+    end
   end
 
-  def normalize_url(url)
-    url = url.dup
-    $log.warn("Discarding fragment in URL: #{url}") if url.fragment
-    url.fragment = nil
-    url.path = url.path.chomp("/")
-    url
+  def normalize_uri(uri)
+    uri = uri.dup
+    $log.warn("Discarding fragment in URL: #{uri}") if uri.fragment
+    uri.fragment = nil
+    uri.path = uri.path.chomp("/")
+    uri
   end
 
   def sleep_between_requests
