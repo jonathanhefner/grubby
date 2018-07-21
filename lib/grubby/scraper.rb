@@ -1,8 +1,5 @@
 class Grubby::Scraper
 
-  class Error < RuntimeError
-  end
-
   # Defines an attribute reader method named by +field+.  During
   # +initialize+, the given block is called, and the attribute is set to
   # the block's return value.  By default, if the block's return value
@@ -24,11 +21,11 @@ class Grubby::Scraper
     define_method(field) do
       return @scraped[field] if @scraped.key?(field)
 
-      unless @errors.key?(field)
+      unless @errors[field]
         begin
           value = instance_eval(&block)
           if value.nil?
-            raise "`#{field}` cannot be nil" unless optional
+            raise FieldValueRequiredError.new(field) unless optional
             $log.debug("#{self.class}##{field} is nil")
           end
           @scraped[field] = value
@@ -37,7 +34,7 @@ class Grubby::Scraper
         end
       end
 
-      raise "`#{field}` raised a #{@errors[field].class}" if @errors.key?(field)
+      raise FieldScrapeFailedError.new(field, @errors[field]) if @errors[field]
 
       @scraped[field]
     end
@@ -65,18 +62,11 @@ class Grubby::Scraper
     self.class.fields.each do |field|
       begin
         self.send(field)
-      rescue RuntimeError
+      rescue FieldScrapeFailedError
       end
     end
 
-    unless @errors.empty?
-      listing = @errors.map do |field, error|
-        error_class = " (#{error.class})" unless error.class == RuntimeError
-        error_trace = error.backtrace.join("\n").indent(2)
-        "* #{field} -- #{error.message}#{error_class}\n#{error_trace}"
-      end
-      raise Error.new("Failed to scrape the following fields:\n#{listing.join("\n")}")
-    end
+    raise Error.new(@errors) unless @errors.empty?
   end
 
   # Returns the scraped value named by +field+.
@@ -94,6 +84,35 @@ class Grubby::Scraper
   # @return [Hash<Symbol, Object>]
   def to_h
     @scraped.dup
+  end
+
+  class Error < RuntimeError
+    def initialize(field_errors)
+      listing = field_errors.
+        reject{|field, error| error.is_a?(FieldScrapeFailedError) }.
+        map do |field, error|
+          "* `#{field}` (#{error.class})\n" +
+            error.message.indent(2) + "\n\n" +
+            error.backtrace.join("\n").indent(4) + "\n"
+        end.
+        join("\n")
+
+      super("Failed to scrape the following fields:\n#{listing}")
+    end
+  end
+
+  private
+
+  class FieldScrapeFailedError < RuntimeError
+    def initialize(field, field_error)
+      super("`#{field}` raised #{field_error.class}")
+    end
+  end
+
+  class FieldValueRequiredError < RuntimeError
+    def initialize(field)
+      super("`#{field}` is nil but is not marked as optional")
+    end
   end
 
 end
