@@ -28,6 +28,12 @@ class GrubbyScraperTest < Minitest::Test
     refute_match "dup_val", error.message
   end
 
+  def test_filters_error_backtrace
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper("", "") }
+    ruby_file = Grubby::Scraper.method(:scrapes).source_location[0]
+    refute_match ruby_file, error.message
+  end
+
   def test_fields_attr
     assert_equal [:req_val, :opt_val, :dup_val].sort, MyScraper.fields.sort
   end

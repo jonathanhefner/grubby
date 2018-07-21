@@ -87,13 +87,19 @@ class Grubby::Scraper
   end
 
   class Error < RuntimeError
+    BACKTRACE_CLEANER = ActiveSupport::BacktraceCleaner.new.tap do |cleaner|
+      cleaner.add_silencer do |line|
+        line.include?(__dir__) && line.include?("scraper.rb:")
+      end
+    end
+
     def initialize(field_errors)
       listing = field_errors.
         reject{|field, error| error.is_a?(FieldScrapeFailedError) }.
         map do |field, error|
           "* `#{field}` (#{error.class})\n" +
             error.message.indent(2) + "\n\n" +
-            error.backtrace.join("\n").indent(4) + "\n"
+            BACKTRACE_CLEANER.clean(error.backtrace).join("\n").indent(4) + "\n"
         end.
         join("\n")
 
