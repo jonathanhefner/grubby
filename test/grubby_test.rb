@@ -47,6 +47,14 @@ class GrubbyTest < Mechanize::TestCase
     assert_includes ((min_amount - 0.1)..max_amount), $sleep_last_amount
   end
 
+  def test_ok_predicate_with_success_code
+    assert Grubby.new.ok?("http://localhost")
+  end
+
+  def test_ok_predicate_with_error_code
+    refute Grubby.new.ok?("http://localhost/response_code?code=500")
+  end
+
   def test_get_mirrored_with_first_successful
     mirror_uris = make_uris
     $stubbed_get_error_queue = []

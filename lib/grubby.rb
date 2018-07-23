@@ -69,6 +69,20 @@ class Grubby < Mechanize
     @seen = @journal ? SingletonKey.parse_file(@journal).index_to{ true } : {}
   end
 
+  # Calls +#head+ and returns true if the result has response code
+  # "200".  Unlike +#head+, error response codes (e.g. "404", "500")
+  # do not cause a +Mechanize::ResponseCodeError+ to be raised.
+  #
+  # @param uri [String]
+  # @return [Boolean]
+  def ok?(uri, query_params = {}, headers = {})
+    begin
+      head(uri, query_params, headers).code == "200"
+    rescue Mechanize::ResponseCodeError => e
+      false
+    end
+  end
+
   # Calls +#get+ with each of +mirror_uris+ until a successful
   # ("200 OK") response is recieved, and returns that +#get+ result.
   # Rescues and logs +Mechanize::ResponseCodeError+ failures for all but

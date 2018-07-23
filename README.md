@@ -60,6 +60,7 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
 
 - [Grubby](http://www.rubydoc.info/gems/grubby/Grubby)
   - [#get_mirrored](http://www.rubydoc.info/gems/grubby/Grubby:get_mirrored)
+  - [#ok?](http://www.rubydoc.info/gems/grubby/Grubby:ok%3F)
   - [#singleton](http://www.rubydoc.info/gems/grubby/Grubby:singleton)
   - [#time_between_requests](http://www.rubydoc.info/gems/grubby/Grubby:time_between_requests)
 - [Scraper](http://www.rubydoc.info/gems/grubby/Grubby/Scraper)
