@@ -126,6 +126,12 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
+  def test_journal_attr
+    in_tmpdir do
+      assert_equal Pathname.new("expected"), Grubby.new("expected").journal
+    end
+  end
+
   def test_json_pluggable_parser
     grubby = Grubby.new
 

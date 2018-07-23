@@ -29,11 +29,15 @@ class Grubby < Mechanize
   #   Range is chosen for each request.
   attr_accessor :time_between_requests
 
-  # @param singleton_journal [Pathname, String]
-  #   Optional journal file to persist the list of resources processed
-  #   by {singleton}.  Useful to ensure only-once processing across
-  #   multiple program runs.
-  def initialize(singleton_journal = nil)
+  # @return [Pathname, nil]
+  #   Journal file used to ensure only-once processing of resources by
+  #   {singleton} across multiple program runs.  Set via {initialize}.
+  attr_reader :journal
+
+  # @param journal [Pathname, String]
+  #   Optional journal file used to ensure only-once processing of
+  #   resources by {singleton} across multiple program runs.
+  def initialize(journal = nil)
     super()
 
     # Prevent "memory leaks", and prevent mistakenly blank urls from
@@ -61,7 +65,7 @@ class Grubby < Mechanize
     self.pre_connect_hooks << Proc.new{ self.send(:sleep_between_requests) }
     self.time_between_requests = 1.0
 
-    @journal = singleton_journal.try(&:to_pathname).try(&:touch_file)
+    @journal = journal.try(&:to_pathname).try(&:touch_file)
     @seen = @journal ? SingletonKey.parse_file(@journal).index_to{ true } : {}
   end
 
