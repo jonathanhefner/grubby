@@ -2,18 +2,6 @@ require "test_helper"
 
 class GrubbyTest < Mechanize::TestCase
 
-  class ::Grubby
-    def stubbed_get(*args, &block)
-      $stubbed_get_error_queue ||= []
-      error = $stubbed_get_error_queue.shift
-      raise error if error
-      real_get(*args, &block)
-    end
-
-    alias_method :real_get, :get
-    alias_method :get, :stubbed_get
-  end
-
   def test_that_it_has_a_version_number
     refute_nil ::Grubby::VERSION
   end
@@ -48,30 +36,27 @@ class GrubbyTest < Mechanize::TestCase
   end
 
   def test_ok_predicate_with_success_code
-    assert Grubby.new.ok?("http://localhost")
+    assert Grubby.new.ok?(make_uris(1).first)
   end
 
   def test_ok_predicate_with_error_code
-    refute Grubby.new.ok?("http://localhost/response_code?code=500")
+    refute Grubby.new.ok?(make_uris(1, "500").first)
   end
 
   def test_get_mirrored_with_first_successful
-    mirror_uris = make_uris
-    $stubbed_get_error_queue = []
+    mirror_uris = make_uris(3)
 
     assert_equal mirror_uris.first, do_get_mirrored_result_uri(mirror_uris)
   end
 
   def test_get_mirrored_with_last_successful
-    mirror_uris = make_uris
-    $stubbed_get_error_queue = make_response_errors(mirror_uris[0...-1])
+    mirror_uris = make_uris(3, "404") + make_uris(1)
 
     assert_equal mirror_uris.last, do_get_mirrored_result_uri(mirror_uris)
   end
 
   def test_get_mirrored_with_none_successful
-    mirror_uris = make_uris
-    $stubbed_get_error_queue = make_response_errors(mirror_uris)
+    mirror_uris = make_uris(3, "404")
 
     assert_raises(Mechanize::ResponseCodeError) do
       do_get_mirrored_result_uri(mirror_uris)
@@ -105,7 +90,7 @@ class GrubbyTest < Mechanize::TestCase
   end
 
   def test_singleton_journal
-    requested_uris = make_uris
+    requested_uris = make_uris(3)
 
     in_tmpdir do
       refute_empty do_singleton_visited_uris(requested_uris, "journal.txt")
@@ -149,13 +134,9 @@ class GrubbyTest < Mechanize::TestCase
 
   private
 
-  def make_uris(count = 3)
-    count.times.map{|i| URI("http://localhost/?#{i}") }
-  end
-
-  def make_response_errors(uris)
-    uris.map do |u|
-      Mechanize::ResponseCodeError.new(page(u, "text/html", "", 404))
+  def make_uris(count, response_code = "200")
+    count.times.map do |i|
+      URI("http://localhost/response_code?code=#{response_code}&i=#{i}")
     end
   end
 
