@@ -3,7 +3,7 @@ require "test_helper"
 class GrubbyScraperTest < Minitest::Test
 
   def test_scrapes_values
-    scraper = make_scraper("R", "O")
+    scraper = make_scraper(req_val: "R", opt_val: "O")
 
     assert_equal "R", scraper.req_val
     assert_equal "O", scraper.opt_val
@@ -11,25 +11,27 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_raises_on_missing_required_value
-    assert_raises(Grubby::Scraper::Error){ make_scraper(nil, "O") }
+    assert_raises(Grubby::Scraper::Error) do
+      make_scraper(req_val: nil, opt_val: "O")
+    end
   end
 
   def test_allows_missing_optional_value
-    scraper = make_scraper("R", nil)
+    scraper = make_scraper(req_val: "R", opt_val: nil)
 
     assert_equal "R", scraper.req_val
     assert_nil scraper.opt_val
   end
 
   def test_reports_all_original_errors
-    error = assert_raises(Grubby::Scraper::Error){ make_scraper("", "") }
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
     assert_match "req_val", error.message
     assert_match "opt_val", error.message
     refute_match "dup_val", error.message
   end
 
   def test_filters_error_backtrace
-    error = assert_raises(Grubby::Scraper::Error){ make_scraper("", "") }
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
     ruby_file = Grubby::Scraper.method(:scrapes).source_location[0]
     refute_match ruby_file, error.message
   end
@@ -39,13 +41,13 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_parser_attr
-    scraper = make_scraper("R", "O")
+    scraper = make_scraper(req_val: "R", opt_val: "O")
 
     assert_instance_of MyParser, scraper.source
   end
 
   def test_lookup
-    scraper = make_scraper("R", "O")
+    scraper = make_scraper(req_val: "R", opt_val: "O")
 
     assert_equal "R", scraper[:req_val]
     assert_equal "O", scraper[:opt_val]
@@ -53,7 +55,7 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_to_h
-    scraper = make_scraper("R", "O")
+    scraper = make_scraper(req_val: "R", opt_val: "O")
 
     assert_equal({ req_val: "R", opt_val: "O", dup_val: "R" }, scraper.to_h)
   end
@@ -66,13 +68,11 @@ class GrubbyScraperTest < Minitest::Test
 
   class MyScraper < Grubby::Scraper
     scrapes :req_val do
-      raise if source.data.first.try(&:empty?)
-      source.data.first
+      source.data.fetch(:req_val)
     end
 
     scrapes :opt_val, optional: true do
-      raise if source.data.last.try(&:empty?)
-      source.data.last
+      source.data.fetch(:opt_val)
     end
 
     scrapes :dup_val do
@@ -80,9 +80,9 @@ class GrubbyScraperTest < Minitest::Test
     end
   end
 
-  def make_scraper(req_val, opt_val)
+  def make_scraper(**data)
     parser = MyParser.new
-    parser.data = [req_val, opt_val]
+    parser.data = data
 
     silence_logging do
       MyScraper.new(parser)

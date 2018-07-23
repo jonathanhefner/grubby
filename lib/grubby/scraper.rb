@@ -29,7 +29,7 @@ class Grubby::Scraper
             $log.debug("#{self.class}##{field} is nil")
           end
           @scraped[field] = value
-        rescue RuntimeError => e
+        rescue RuntimeError, IndexError => e
           @errors[field] = e
         end
       end
