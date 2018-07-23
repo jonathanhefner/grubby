@@ -60,6 +60,11 @@ class GrubbyScraperTest < Minitest::Test
     assert_equal({ req_val: "R", opt_val: "O", dup_val: "R" }, scraper.to_h)
   end
 
+  def test_incorrect_initialize_gives_friendly_error
+    error = assert_raises{ IncorrectScraper.new.foo }
+    assert_match "initialize", error.message
+  end
+
   private
 
   class MyParser < Mechanize::File
@@ -86,6 +91,14 @@ class GrubbyScraperTest < Minitest::Test
 
     silence_logging do
       MyScraper.new(parser)
+    end
+  end
+
+  class IncorrectScraper < Grubby::Scraper
+    scrapes(:foo){ "FOO!" }
+
+    def initialize(*args)
+      # does not call `super`
     end
   end
 

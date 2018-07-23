@@ -19,6 +19,7 @@ class Grubby::Scraper
     self.fields << field
 
     define_method(field) do
+      raise "#{self.class}#initialize does not invoke `super`" unless defined?(@scraped)
       return @scraped[field] if @scraped.key?(field)
 
       unless @errors[field]
