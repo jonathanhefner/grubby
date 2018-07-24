@@ -78,6 +78,8 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [#search!](http://www.rubydoc.info/gems/grubby/Mechanize/Page:search%21)
 - Mechanize::Page::Link
   - [#to_absolute_uri](http://www.rubydoc.info/gems/grubby/Mechanize/Page/Link#to_absolute_uri)
+- URI
+  - [#basename](https://www.rubydoc.info/gems/grubby/URI:basename)
 
 
 ## Supplemental API
