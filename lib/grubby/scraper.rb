@@ -52,6 +52,12 @@ class Grubby::Scraper
   #   such as +Mechanize::Page+.
   attr_reader :source
 
+  # @return [Hash<Symbol, StandardError>]
+  #   Hash of errors raised by blocks passed to {scrapes}.  If
+  #   {initialize} does not raise +Grubby::Scraper::Error+, this Hash
+  #   will be empty.
+  attr_reader :errors
+
   # @param source
   # @raise [Grubby::Scraper::Error]
   #   if any scraped values result in error
@@ -67,7 +73,7 @@ class Grubby::Scraper
       end
     end
 
-    raise Error.new(@errors) unless @errors.empty?
+    raise Error.new(self) unless @errors.empty?
   end
 
   # Returns the scraped value named by +field+.
@@ -94,8 +100,14 @@ class Grubby::Scraper
       end
     end
 
-    def initialize(field_errors)
-      listing = field_errors.
+    # @return [Grubby::Scraper]
+    #   The Scraper that raised this error.
+    attr_accessor :scraper
+
+    def initialize(scraper)
+      self.scraper = scraper
+
+      listing = scraper.errors.
         reject{|field, error| error.is_a?(FieldScrapeFailedError) }.
         map do |field, error|
           "* `#{field}` (#{error.class})\n" +
@@ -107,8 +119,6 @@ class Grubby::Scraper
       super("Failed to scrape the following fields:\n#{listing}")
     end
   end
-
-  private
 
   class FieldScrapeFailedError < RuntimeError
     def initialize(field, field_error)

@@ -23,8 +23,18 @@ class GrubbyScraperTest < Minitest::Test
     assert_nil scraper.opt_val
   end
 
-  def test_reports_all_original_errors
+  def test_captures_all_errors
     error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
+
+    assert_instance_of MyScraper, error.scraper
+    [:req_val, :opt_val, :dup_val].each do |field|
+      assert_kind_of StandardError, error.scraper.errors[field]
+    end
+  end
+
+  def test_reports_only_original_errors
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
+
     assert_match "req_val", error.message
     assert_match "opt_val", error.message
     refute_match "dup_val", error.message
