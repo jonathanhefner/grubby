@@ -1,7 +1,8 @@
 class Grubby::JsonScraper < Grubby::Scraper
 
+  # The parsed JSON data being scraped.
+  #
   # @return [Hash, Array]
-  #   The parsed JSON data being scraped.
   attr_reader :json
 
   # @param source [Grubby::JsonParser]

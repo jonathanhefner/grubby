@@ -1,7 +1,8 @@
 class Grubby::PageScraper < Grubby::Scraper
 
+  # The Page being scraped.
+  #
   # @return [Mechanize::Page]
-  #   The Page being scraped.
   attr_reader :page
 
   # @param source [Mechanize::Page]

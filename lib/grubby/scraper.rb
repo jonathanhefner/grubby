@@ -41,21 +41,24 @@ class Grubby::Scraper
     end
   end
 
+  # The names of all scraped values, as defined by {scrapes}.
+  #
   # @return [Array<Symbol>]
-  #   The names of all scraped values, as defined by {scrapes}.
   def self.fields
     @fields ||= []
   end
 
+  # The source being scraped.  Typically a Mechanize pluggable parser
+  # such as +Mechanize::Page+.
+  #
   # @return [Object]
-  #   The source being scraped.  Typically a Mechanize pluggable parser
-  #   such as +Mechanize::Page+.
   attr_reader :source
 
+  # Hash of errors raised by blocks passed to {scrapes}.  If
+  # {initialize} does not raise +Grubby::Scraper::Error+, this Hash will
+  # be empty.
+  #
   # @return [Hash<Symbol, StandardError>]
-  #   Hash of errors raised by blocks passed to {scrapes}.  If
-  #   {initialize} does not raise +Grubby::Scraper::Error+, this Hash
-  #   will be empty.
   attr_reader :errors
 
   # @param source

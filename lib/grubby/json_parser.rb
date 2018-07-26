@@ -33,8 +33,9 @@ class Grubby::JsonParser < Mechanize::File
     @json_parse_options = options
   end
 
+  # The parsed JSON data.
+  #
   # @return [Hash, Array]
-  #   The parsed JSON data.
   attr_reader :json
 
   def initialize(uri = nil, response = nil, body = nil, code = nil)

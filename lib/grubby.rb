@@ -23,15 +23,17 @@ class Grubby < Mechanize
 
   VERSION = GRUBBY_VERSION
 
+  # The enforced minimum amount of time to wait between requests, in
+  # seconds.  If the value is a Range, a random number within the Range
+  # is chosen for each request.
+  #
   # @return [Integer, Float, Range<Integer>, Range<Float>]
-  #   The enforced minimum amount of time to wait between requests, in
-  #   seconds.  If the value is a Range, a random number within the
-  #   Range is chosen for each request.
   attr_accessor :time_between_requests
 
+  # Journal file used to ensure only-once processing of resources by
+  # {singleton} across multiple program runs.  Set via {initialize}.
+  #
   # @return [Pathname, nil]
-  #   Journal file used to ensure only-once processing of resources by
-  #   {singleton} across multiple program runs.  Set via {initialize}.
   attr_reader :journal
 
   # @param journal [Pathname, String]
