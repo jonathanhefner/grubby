@@ -10,6 +10,20 @@ class URITest < Minitest::Test
     end
   end
 
+  def test_query_param
+    keys = ["", "[]", "[][x]", "[][y]", "[x][]", "[y][]"].map{|brack| "foo#{brack}" }
+    values = ["a", "b", "c"]
+    query = keys.product(values).map{|key, value| "#{key}=#{value}" }.join("&")
+    uri = URI("http://localhost/?#{query}")
+
+    keys.each do |key|
+      expected = key.include?("[]") ? values : values.last
+      assert_equal expected, uri.query_param(key)
+    end
+
+    assert_nil uri.query_param("miss")
+  end
+
   def test_to_absolute_uri_with_absolute_uri
     uri = URI("http://localhost")
     assert_same uri, uri.to_absolute_uri
