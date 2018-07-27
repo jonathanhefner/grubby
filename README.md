@@ -73,6 +73,7 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [.scrape_file](http://www.rubydoc.info/gems/grubby/Grubby/PageScraper.scrape_file)
   - [#page](http://www.rubydoc.info/gems/grubby/Grubby/PageScraper:page)
 - [JsonScraper](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper)
+  - [.scrape_file](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper.scrape_file)
   - [#json](http://www.rubydoc.info/gems/grubby/Grubby/JsonScraper:json)
 - Mechanize::Page
   - [#at!](http://www.rubydoc.info/gems/grubby/Mechanize/Page:at%21)
