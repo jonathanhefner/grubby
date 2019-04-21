@@ -3,37 +3,37 @@ require "test_helper"
 class GrubbyScraperTest < Minitest::Test
 
   def test_scrapes_values
-    scraper = make_scraper(req_val: "R", opt_val: "O")
+    scraper = make_scraper(CONTENT)
 
-    assert_equal "R", scraper.req_val
-    assert_equal "O", scraper.opt_val
-    assert_equal scraper.req_val, scraper.dup_val
-  end
-
-  def test_raises_on_missing_required_value
-    assert_raises(Grubby::Scraper::Error) do
-      make_scraper(req_val: nil, opt_val: "O")
+    EXPECTED.each do |field, expected|
+      assert_equal expected, scraper.send(field)
     end
   end
 
-  def test_allows_missing_optional_value
-    scraper = make_scraper(req_val: "R", opt_val: nil)
+  def test_raises_on_nil_required_value
+    assert_raises(Grubby::Scraper::Error) do
+      make_scraper(CONTENT.merge(req: nil))
+    end
+  end
 
-    assert_equal "R", scraper.req_val
+  def test_allows_nil_optional_value
+    scraper = make_scraper(CONTENT.merge(opt: nil))
+
+    assert_equal EXPECTED[:req_val], scraper.req_val # sanity check
     assert_nil scraper.opt_val
   end
 
   def test_captures_all_errors
-    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper({}) }
 
     assert_instance_of MyScraper, error.scraper
-    [:req_val, :opt_val, :dup_val].each do |field|
+    EXPECTED.keys.each do |field|
       assert_kind_of StandardError, error.scraper.errors[field]
     end
   end
 
   def test_reports_only_original_errors
-    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper({}) }
 
     assert_match "req_val", error.message
     assert_match "opt_val", error.message
@@ -41,53 +41,63 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_filters_error_backtrace
-    error = assert_raises(Grubby::Scraper::Error){ make_scraper() }
+    error = assert_raises(Grubby::Scraper::Error){ make_scraper({}) }
     ruby_file = Grubby::Scraper.method(:scrapes).source_location[0]
+
     refute_match ruby_file, error.message
   end
 
   def test_fields_attr
-    assert_equal [:req_val, :opt_val, :dup_val].sort, MyScraper.fields.sort
+    assert_equal EXPECTED.keys.sort, MyScraper.fields.sort
   end
 
-  def test_parser_attr
-    scraper = make_scraper(req_val: "R", opt_val: "O")
+  def test_source_attr
+    scraper = make_scraper(CONTENT)
 
-    assert_instance_of MyParser, scraper.source
+    assert_kind_of Mechanize::File, scraper.source
+    assert_equal CONTENT, scraper.source.content
   end
 
   def test_lookup
-    scraper = make_scraper(req_val: "R", opt_val: "O")
+    scraper = make_scraper(CONTENT)
 
-    assert_equal "R", scraper[:req_val]
-    assert_equal "O", scraper[:opt_val]
-    assert_equal scraper[:req_val], scraper[:dup_val]
+    EXPECTED.each do |field, expected|
+      assert_equal expected, scraper[field]
+    end
   end
 
   def test_to_h
-    scraper = make_scraper(req_val: "R", opt_val: "O")
+    scraper = make_scraper(CONTENT)
 
-    assert_equal({ req_val: "R", opt_val: "O", dup_val: "R" }, scraper.to_h)
+    assert_equal EXPECTED, scraper.to_h
   end
 
-  def test_incorrect_initialize_gives_friendly_error
+  def test_initialize_missing_super_raises_friendly_error
     error = assert_raises{ IncorrectScraper.new.foo }
+
     assert_match "initialize", error.message
   end
 
   private
 
-  class MyParser < Mechanize::File
-    attr_accessor :data
-  end
+  CONTENT = {
+    req: "required value",
+    opt: "optional value",
+  }
+
+  EXPECTED = {
+    req_val: "required value",
+    dup_val: "required value",
+    opt_val: "optional value",
+  }
 
   class MyScraper < Grubby::Scraper
     scrapes :req_val do
-      source.data.fetch(:req_val)
+      source.content.fetch(:req)
     end
 
     scrapes :opt_val, optional: true do
-      source.data.fetch(:opt_val)
+      source.content.fetch(:opt)
     end
 
     scrapes :dup_val do
@@ -95,12 +105,10 @@ class GrubbyScraperTest < Minitest::Test
     end
   end
 
-  def make_scraper(**data)
-    parser = MyParser.new
-    parser.data = data
-
+  def make_scraper(content)
+    source = Mechanize::File.new(nil, nil, content, nil)
     silence_logging do
-      MyScraper.new(parser)
+      MyScraper.new(source)
     end
   end
 
