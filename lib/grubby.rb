@@ -81,7 +81,7 @@ class Grubby < Mechanize
   def ok?(uri, query_params = {}, headers = {})
     begin
       head(uri, query_params, headers).code == "200"
-    rescue Mechanize::ResponseCodeError => e
+    rescue Mechanize::ResponseCodeError
       false
     end
   end
