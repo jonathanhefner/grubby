@@ -9,7 +9,7 @@ module URI
   #
   # @return [String]
   def basename
-    self.path == "/" ? "" : File.basename(self.path)
+    self.path == "/" ? "" : ::File.basename(self.path)
   end
 
   # Returns the value of the specified param in the URI's +query+.
