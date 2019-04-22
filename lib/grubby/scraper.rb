@@ -45,7 +45,7 @@ class Grubby::Scraper
   #
   # @return [Array<Symbol>]
   def self.fields
-    @fields ||= []
+    @fields ||= self == Grubby::Scraper ? [] : self.superclass.fields.dup
   end
 
   # The source being scraped.  Typically a Mechanize pluggable parser

@@ -51,6 +51,10 @@ class GrubbyScraperTest < Minitest::Test
     assert_equal EXPECTED.keys.sort, MyScraper.fields.sort
   end
 
+  def test_fields_attr_includes_superclass_fields
+    assert_equal INHERITING_EXPECTED.keys.sort, MyInheritingScraper.fields.sort
+  end
+
   def test_source_attr
     scraper = make_scraper(CONTENT)
 
@@ -72,6 +76,12 @@ class GrubbyScraperTest < Minitest::Test
     assert_equal EXPECTED, scraper.to_h
   end
 
+  def test_to_h_includes_superclass_fields
+    scraper = make_scraper(CONTENT, MyInheritingScraper)
+
+    assert_equal INHERITING_EXPECTED, scraper.to_h
+  end
+
   def test_initialize_missing_super_raises_friendly_error
     error = assert_raises{ IncorrectScraper.new.foo }
 
@@ -91,6 +101,10 @@ class GrubbyScraperTest < Minitest::Test
     opt_val: "optional value",
   }
 
+  INHERITING_EXPECTED = EXPECTED.merge(
+    add_val: EXPECTED[:req_val],
+  )
+
   class MyScraper < Grubby::Scraper
     scrapes :req_val do
       source.content.fetch(:req)
@@ -105,10 +119,16 @@ class GrubbyScraperTest < Minitest::Test
     end
   end
 
-  def make_scraper(content)
+  class MyInheritingScraper < MyScraper
+    scrapes :add_val do
+      req_val
+    end
+  end
+
+  def make_scraper(content, klass = MyScraper)
     source = Mechanize::File.new(nil, nil, content, nil)
     silence_logging do
-      MyScraper.new(source)
+      klass.new(source)
     end
   end
 
