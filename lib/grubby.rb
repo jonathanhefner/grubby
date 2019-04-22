@@ -146,7 +146,7 @@ class Grubby < Mechanize
 
     yield resource unless skip
 
-    series.append_to_file(@journal) if @journal
+    series.append_to_file(journal) if journal
 
     !skip
   end
@@ -175,8 +175,8 @@ class Grubby < Mechanize
 
   def sleep_between_requests
     @last_request_at ||= 0.0
-    delay_duration = @time_between_requests.is_a?(Range) ?
-      rand(@time_between_requests) : @time_between_requests
+    delay_duration = time_between_requests.is_a?(Range) ?
+      rand(time_between_requests) : time_between_requests
     sleep_duration = @last_request_at + delay_duration - Time.now.to_f
     sleep(sleep_duration) if sleep_duration > 0
     @last_request_at = Time.now.to_f
