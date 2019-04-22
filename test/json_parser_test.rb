@@ -2,30 +2,34 @@ require "test_helper"
 
 class GrubbyJsonParserTest < Minitest::Test
 
-  def test_parse_on_initialize
-    value = [{ "key1" => "val1", "key2" => "val2"}]
-    result = Grubby::JsonParser.new(nil, nil, value.to_json, nil)
-    assert_equal value, result.json
+  def setup
+    @original_json_parse_options = Grubby::JsonParser.json_parse_options.dup
   end
 
-  def test_parse_on_initialize_with_options
+  def teardown
+    Grubby::JsonParser.json_parse_options.replace(@original_json_parse_options)
+  end
+
+  def test_parse
+    data = [{ "key1" => "val1", "key2" => "val2"}]
+    parser = Grubby::JsonParser.new(nil, nil, data.to_json, nil)
+
+    assert_equal data, parser.json
+  end
+
+  def test_parse_with_options
     Grubby::JsonParser.json_parse_options[:symbolize_names] = true
+    data = [{ key1: "val1", key2: "val2"}]
+    parser = Grubby::JsonParser.new(nil, nil, data.to_json, nil)
 
-    value = [{ key1: "val1", key2: "val2"}]
-    result = Grubby::JsonParser.new(nil, nil, value.to_json, nil)
-    assert_equal value, result.json
-
-    Grubby::JsonParser.json_parse_options[:symbolize_names] = false
+    assert_equal data, parser.json
   end
 
-  def test_replace_options
-    original = Grubby::JsonParser.json_parse_options
+  def test_options_writer
+    options = { max_nesting: 9001 }
+    Grubby::JsonParser.json_parse_options = options
 
-    replacement = { max_nesting: 9001 }
-    Grubby::JsonParser.json_parse_options = replacement
-    assert_equal replacement, Grubby::JsonParser.json_parse_options
-
-    Grubby::JsonParser.json_parse_options = original
+    assert_equal options, Grubby::JsonParser.json_parse_options
   end
 
 end
