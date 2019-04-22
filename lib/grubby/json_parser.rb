@@ -39,7 +39,7 @@ class Grubby::JsonParser < Mechanize::File
   attr_reader :json
 
   def initialize(uri = nil, response = nil, body = nil, code = nil)
-    @json = body && JSON.parse(body, self.class.json_parse_options)
+    @json = body.presence && JSON.parse(body, self.class.json_parse_options)
     super
   end
 

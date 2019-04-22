@@ -25,6 +25,18 @@ class GrubbyJsonParserTest < Minitest::Test
     assert_equal data, parser.json
   end
 
+  def test_parse_nil_body
+    parser = Grubby::JsonParser.new(nil, nil, nil, nil) # does not raise
+
+    assert_nil parser.json
+  end
+
+  def test_parse_empty_body
+    parser = Grubby::JsonParser.new(nil, nil, "", nil) # does not raise
+
+    assert_nil parser.json
+  end
+
   def test_options_writer
     options = { max_nesting: 9001 }
     Grubby::JsonParser.json_parse_options = options
