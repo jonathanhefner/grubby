@@ -119,9 +119,34 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
-  def test_journal_attr
+  def test_journal_initializer
     in_tmpdir do
       assert_equal Pathname.new("expected"), Grubby.new("expected").journal
+    end
+  end
+
+  def test_journal_attr
+    uris = make_uris(2)
+    journal_a = Pathname.new("a")
+    journal_b = Pathname.new("b")
+
+    in_tmpdir do
+      grubby = Grubby.new
+
+      grubby.journal = journal_a.to_s
+      assert_equal journal_a, grubby.journal
+      refute_empty singleton_resultant_uris(uris, grubby)
+
+      grubby.journal = journal_b
+      assert_equal journal_b, grubby.journal
+      refute_empty singleton_resultant_uris(uris, grubby)
+
+      grubby.journal = journal_a
+      assert_empty singleton_resultant_uris(uris, grubby)
+
+      grubby.journal = nil
+      assert_nil grubby.journal
+      refute_empty singleton_resultant_uris(uris, grubby)
     end
   end
 
