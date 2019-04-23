@@ -3,7 +3,7 @@ require "test_helper"
 class GrubbyTest < Mechanize::TestCase
 
   def test_that_it_has_a_version_number
-    refute_nil ::Grubby::VERSION
+    refute_nil Grubby::VERSION
   end
 
   def test_default_constructor
@@ -44,78 +44,78 @@ class GrubbyTest < Mechanize::TestCase
   end
 
   def test_get_mirrored_with_first_successful
-    mirror_uris = make_uris(3)
+    uris = make_uris(2)
 
-    assert_equal mirror_uris.first, do_get_mirrored_result_uri(mirror_uris)
+    assert_equal uris.first, get_mirrored_resultant_uri(uris)
   end
 
   def test_get_mirrored_with_last_successful
-    mirror_uris = make_uris(3, "404") + make_uris(1)
+    uris = make_uris(2, "404") + make_uris(1)
 
-    assert_equal mirror_uris.last, do_get_mirrored_result_uri(mirror_uris)
+    assert_equal uris.last, get_mirrored_resultant_uri(uris)
   end
 
   def test_get_mirrored_with_none_successful
-    mirror_uris = make_uris(3, "404")
+    uris = make_uris(2, "404")
 
     assert_raises(Mechanize::ResponseCodeError) do
-      do_get_mirrored_result_uri(mirror_uris)
+      get_mirrored_resultant_uri(uris)
     end
   end
 
   def test_singleton_with_different_pages
-    requested_uris = make_uris(2)
-    requested_uris.last.path = "/form_test.html"
+    uris = make_uris(2)
+    uris.last.path = "/form_test.html"
 
-    assert_equal requested_uris, do_singleton_visited_uris(requested_uris)
+    assert_equal uris, singleton_resultant_uris(uris)
   end
 
   def test_singleton_with_same_url
-    requested_uris = make_uris(1) * 2
+    uris = make_uris(1) * 2
 
-    assert_equal requested_uris.uniq, do_singleton_visited_uris(requested_uris)
+    assert_equal uris.uniq, singleton_resultant_uris(uris)
   end
 
-  def test_singleton_with_same_content
-    requested_uris = make_uris(2)
+  def test_singleton_with_same_page_content
+    uris = make_uris(2)
 
-    assert_equal requested_uris.take(1), do_singleton_visited_uris(requested_uris)
+    assert_equal uris.take(1), singleton_resultant_uris(uris)
   end
 
   def test_singleton_with_different_purposes
-    purposes = 3.times.map{|i| "purpose #{i}" }
-    requested_uris = make_uris(1) * purposes.length
+    purposes = 2.times.map{|i| "purpose #{i}" }
+    uris = make_uris(1) * purposes.length
 
-    assert_equal requested_uris, do_singleton_visited_uris(requested_uris.zip(purposes))
+    assert_equal uris, singleton_resultant_uris(uris.zip(purposes))
   end
 
   def test_singleton_journal
-    requested_uris = make_uris(3)
+    uris = make_uris(2)
 
     in_tmpdir do
-      refute_empty do_singleton_visited_uris(requested_uris, "journal.txt")
-      assert_empty do_singleton_visited_uris(requested_uris, "journal.txt")
+      refute_empty singleton_resultant_uris(uris, Grubby.new("journal.txt"))
+      assert_empty singleton_resultant_uris(uris, Grubby.new("journal.txt"))
     end
   end
 
   def test_singleton_journal_with_different_pages
-    requested_uris = make_uris(2)
-    requested_uris.last.path = "/form_test.html"
+    uris = make_uris(2)
+    uris.last.path = "/form_test.html"
 
     in_tmpdir do
-      refute_empty do_singleton_visited_uris(requested_uris.take(1), "journal.txt")
-      refute_empty do_singleton_visited_uris(requested_uris.drop(1), "journal.txt")
+      refute_empty singleton_resultant_uris(uris.take(1), Grubby.new("journal.txt"))
+      refute_empty singleton_resultant_uris(uris.drop(1), Grubby.new("journal.txt"))
     end
   end
 
   def test_singleton_journal_with_different_purposes
-    purposes = 3.times.map{|i| "purpose #{i}" }
-    requested_uris = make_uris(1) * purposes.length
-    requested = requested_uris.zip(purposes)
+    purposes = 2.times.map{|i| "purpose #{i}" }
+    uris = make_uris(1) * purposes.length
+    requests = uris.zip(purposes)
 
     in_tmpdir do
-      refute_empty do_singleton_visited_uris(requested, "journal.txt")
-      assert_empty do_singleton_visited_uris(requested, "journal.txt")
+      refute_empty singleton_resultant_uris(requests, Grubby.new("journal.txt"))
+      assert_empty singleton_resultant_uris(requests, Grubby.new("journal.txt"))
     end
   end
 
@@ -140,26 +140,24 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
-  def do_get_mirrored_result_uri(mirror_uris)
+  def get_mirrored_resultant_uri(uris)
     silence_logging do
-      Grubby.new.get_mirrored(mirror_uris).uri
+      Grubby.new.get_mirrored(uris).uri
     end
   end
 
-  def do_singleton_visited_uris(requested, journal = nil)
-    visited_uris = []
+  def singleton_resultant_uris(requests, grubby = Grubby.new)
+    resultant_uris = []
 
     silence_logging do
-      grubby = Grubby.new(journal)
-      requested.each do |r|
-        previous_count = visited_uris.length
-        singleton_args = r.is_a?(Array) ? r : [r]
-        visited = grubby.singleton(*singleton_args){|page| visited_uris << page.uri }
-        assert_equal (visited_uris.length > previous_count), !!visited
+      requests.each do |args|
+        previous_count = resultant_uris.length
+        visited = grubby.singleton(*args){|page| resultant_uris << page.uri }
+        assert_equal (resultant_uris.length > previous_count), !!visited
       end
     end
 
-    visited_uris
+    resultant_uris
   end
 
 end
