@@ -10,6 +10,10 @@ class GrubbyTest < Mechanize::TestCase
     assert_kind_of Mechanize, Grubby.new
   end
 
+  def test_global_default_instance
+    assert_instance_of Grubby, $grubby
+  end
+
   def test_time_between_requests_with_number
     $sleep_last_amount = 0.0
     amount = 5.0

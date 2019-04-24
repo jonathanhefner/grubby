@@ -201,3 +201,6 @@ require_relative "grubby/json_parser"
 require_relative "grubby/scraper"
 require_relative "grubby/page_scraper"
 require_relative "grubby/json_scraper"
+
+
+$grubby = Grubby.new

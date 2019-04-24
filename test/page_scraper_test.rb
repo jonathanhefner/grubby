@@ -22,9 +22,9 @@ class GrubbyPageScraperTest < Minitest::Test
 
       assert_instance_of MyScraper, scraper
       assert_equal h1, scraper.h1
-      assert_instance_of Grubby, scraper.page.mech
       assert_equal "file", scraper.page.uri.scheme
       assert_equal path, scraper.page.uri.path
+      assert_same $grubby, scraper.page.mech
     end
   end
 
