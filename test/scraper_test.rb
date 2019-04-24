@@ -88,6 +88,22 @@ class GrubbyScraperTest < Minitest::Test
     assert_match "initialize", error.message
   end
 
+  def test_factory_method
+    url = "http://localhost/response_code?code=200"
+    scraper = DummyScraper.scrape(url)
+
+    assert_instance_of DummyScraper, scraper
+    assert_equal url, scraper.source.uri.to_s
+    assert_same $grubby, scraper.source.mech
+  end
+
+  def test_factory_method_with_agent
+    agent = Mechanize.new
+    scraper = DummyScraper.scrape("http://localhost/response_code?code=200", agent)
+
+    assert_same agent, scraper.source.mech
+  end
+
   private
 
   CONTENT = {
@@ -138,6 +154,9 @@ class GrubbyScraperTest < Minitest::Test
     def initialize(*args)
       # does not call `super`
     end
+  end
+
+  class DummyScraper < Grubby::Scraper
   end
 
 end

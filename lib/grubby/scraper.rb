@@ -48,6 +48,38 @@ class Grubby::Scraper
     @fields ||= self == Grubby::Scraper ? [] : self.superclass.fields.dup
   end
 
+  # Instantiates the Scraper class with the resource specified by +url+.
+  # This method acts as a default factory method, and provides a
+  # standard interface for specialized overrides.
+  #
+  # @example Default factory method
+  #   class PostPageScraper < Grubby::PageScraper
+  #     # ...
+  #   end
+  #
+  #   PostPageScraper.scrape("https://example.com/posts/42")
+  #     # == PostPageScraper.new($grubby.get("https://example.com/posts/42"))
+  #
+  # @example Specialized factory method
+  #   class PostApiScraper < Grubby::JsonScraper
+  #     # ...
+  #
+  #     def self.scrapes(url, agent = $grubby)
+  #       api_url = url.sub(%r"//example.com/(.+)", '//api.example.com/\1.json')
+  #       super(api_url, agent)
+  #     end
+  #   end
+  #
+  #   PostApiScraper.scrape("https://example.com/posts/42")
+  #     # == PostApiScraper.new($grubby.get("https://api.example.com/posts/42.json"))
+  #
+  # @param url [String, URI]
+  # @param agent [Mechanize]
+  # @return [Grubby::Scraper]
+  def self.scrape(url, agent = $grubby)
+    self.new(agent.get(url))
+  end
+
   # The source being scraped.  Typically a Mechanize pluggable parser
   # such as +Mechanize::Page+.
   #

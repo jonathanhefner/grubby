@@ -65,6 +65,7 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [#time_between_requests](http://www.rubydoc.info/gems/grubby/Grubby:time_between_requests)
 - [Scraper](http://www.rubydoc.info/gems/grubby/Grubby/Scraper)
   - [.fields](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.fields)
+  - [.scrape](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.scrape)
   - [.scrapes](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.scrapes)
   - [#[]](http://www.rubydoc.info/gems/grubby/Grubby/Scraper:[])
   - [#source](http://www.rubydoc.info/gems/grubby/Grubby/Scraper:source)
