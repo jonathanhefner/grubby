@@ -89,19 +89,67 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_factory_method
-    url = "http://localhost/response_code?code=200"
-    scraper = DummyScraper.scrape(url)
+    scraper = UrlScraper.scrape(UrlScraper.url)
 
-    assert_instance_of DummyScraper, scraper
-    assert_equal url, scraper.source.uri.to_s
+    assert_instance_of UrlScraper, scraper
+    assert_equal UrlScraper.url, scraper.url
     assert_same $grubby, scraper.source.mech
   end
 
   def test_factory_method_with_agent
     agent = Mechanize.new
-    scraper = DummyScraper.scrape("http://localhost/response_code?code=200", agent)
+    scraper = UrlScraper.scrape(UrlScraper.url, agent)
 
     assert_same agent, scraper.source.mech
+  end
+
+  def test_each
+    [nil, :next_uri, :next_page].each do |method|
+      expected_urls = (1..2).map{|i| UrlScraper.url(i) }.reverse
+      expected_urls.each{|url| url << "##{method}" } if method
+      actual_urls = []
+
+      UrlScraper.each(expected_urls.first, { next_method: method }.compact) do |scraper|
+        assert_instance_of UrlScraper, scraper
+        assert_same $grubby, scraper.source.mech
+        actual_urls << scraper.url
+      end
+      assert_equal expected_urls, actual_urls
+    end
+  end
+
+  def test_each_with_agent
+    agent = Mechanize.new
+
+    UrlScraper.each(UrlScraper.url(2), agent) do |scraper|
+      assert_same agent, scraper.source.mech
+    end
+  end
+
+  def test_each_without_block
+    [nil, :next_uri, :next_page].each do |method|
+      args = [UrlScraper.url(2), ({ next_method: method } if method)].compact
+      expected_urls = []
+      UrlScraper.each(*args){|scraper| expected_urls << scraper.url }
+      actual = UrlScraper.each(*args)
+
+      assert_kind_of Enumerator, actual
+      assert_equal expected_urls, actual.map(&:url)
+    end
+  end
+
+  def test_each_with_invalid_next_method
+    error = assert_raises NoMethodError do
+      UrlScraper.each(UrlScraper.url(2), next_method: :nope) do |scraper|
+        assert false # should never get here
+      end
+    end
+    assert_equal :nope, error.name
+
+    error = assert_raises NoMethodError do
+      UrlScraper.each(UrlScraper.url(2), next_method: :nope)
+    end
+    assert_equal :nope, error.name
   end
 
   private
@@ -156,7 +204,25 @@ class GrubbyScraperTest < Minitest::Test
     end
   end
 
-  class DummyScraper < Grubby::Scraper
+  class UrlScraper < Grubby::Scraper
+    def self.url(n = 1)
+      "http://localhost/response_code?code=200&n=#{n}"
+    end
+
+    scrapes(:url){ source.uri.to_s }
+    scrapes(:n){ source.uri.query[/\bn=(\d+)\b/, 1]&.to_i }
+
+    def next
+      self.class.url(n - 1) if n > 1
+    end
+
+    def next_uri
+      self.next.try{|url| URI(url + "#next_uri") }
+    end
+
+    def next_page
+      self.next.try{|url| source.mech.get(url + "#next_page") }
+    end
   end
 
 end

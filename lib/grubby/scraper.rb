@@ -80,6 +80,66 @@ class Grubby::Scraper
     self.new(agent.get(url))
   end
 
+  # Iterates a series of pages, starting at +start_url+.  For each page,
+  # the Scraper class is instantiated and passed to the given block.
+  # Subsequent pages in the series are determined by invoking
+  # +next_method+ on each previous scraper instance.
+  #
+  # Iteration stops when the +next_method+ method returns nil.  If the
+  # +next_method+ method returns a String or URI, that value will be
+  # treated as the URL of the next page.  Otherwise that value will be
+  # treated as the page itself.
+  #
+  # @example
+  #   class PostsIndexScraper < Grubby::PageScraper
+  #     scrapes(:page_param){ page.uri.query_param("page") }
+  #
+  #     def next
+  #       page.link_with(text: "Next >")&.click
+  #     end
+  #   end
+  #
+  #   PostsIndexScraper.each("https://example.com/posts?page=1") do |scraper|
+  #     scraper.page_param  # == "1", "2", "3", ...
+  #   end
+  #
+  # @example
+  #   class PostsIndexScraper < Grubby::PageScraper
+  #     scrapes(:page_param){ page.uri.query_param("page") }
+  #
+  #     scrapes(:next_uri, optional: true) do
+  #       page.link_with(text: "Next >")&.to_absolute_uri
+  #     end
+  #   end
+  #
+  #   PostsIndexScraper.each("https://example.com/posts?page=1", next_method: :next_uri) do |scraper|
+  #     scraper.page_param  # == "1", "2", "3", ...
+  #   end
+  #
+  # @param start_url [String, URI]
+  # @param agent [Mechanize]
+  # @param next_method [Symbol]
+  # @yield [scraper]
+  # @yieldparam scraper [Grubby::Scraper]
+  # @return [void]
+  # @raise [NoMethodError]
+  #   if Scraper class does not implement +next_method+
+  def self.each(start_url, agent = $grubby, next_method: :next)
+    unless self.method_defined?(next_method)
+      raise NoMethodError.new(nil, next_method), "#{self} does not define `#{next_method}`"
+    end
+
+    return to_enum(:each, start_url, agent, next_method: next_method) unless block_given?
+
+    current = start_url
+    while current
+      current = agent.get(current) if current.is_a?(String) || current.is_a?(URI)
+      scraper = self.new(current)
+      yield scraper
+      current = scraper.send(next_method)
+    end
+  end
+
   # The source being scraped.  Typically a Mechanize pluggable parser
   # such as +Mechanize::Page+.
   #

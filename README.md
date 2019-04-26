@@ -64,6 +64,7 @@ puts hn.items.take(10).map(&:title) # your scraping logic goes here
   - [#singleton](http://www.rubydoc.info/gems/grubby/Grubby:singleton)
   - [#time_between_requests](http://www.rubydoc.info/gems/grubby/Grubby:time_between_requests)
 - [Scraper](http://www.rubydoc.info/gems/grubby/Grubby/Scraper)
+  - [.each](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.each)
   - [.fields](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.fields)
   - [.scrape](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.scrape)
   - [.scrapes](http://www.rubydoc.info/gems/grubby/Grubby/Scraper.scrapes)
