@@ -88,7 +88,7 @@ class Grubby < Mechanize
   # "200".  Unlike +#head+, error response codes (e.g. "404", "500")
   # do not cause a +Mechanize::ResponseCodeError+ to be raised.
   #
-  # @param uri [String]
+  # @param uri [URI, String]
   # @return [Boolean]
   def ok?(uri, query_params = {}, headers = {})
     begin
@@ -103,7 +103,21 @@ class Grubby < Mechanize
   # Rescues and logs +Mechanize::ResponseCodeError+ failures for all but
   # the last mirror.
   #
-  # @param mirror_uris [Array<String>]
+  # @example
+  #   grubby = Grubby.new
+  #
+  #   urls = [
+  #     "http://httpstat.us/404",
+  #     "http://httpstat.us/500",
+  #     "http://httpstat.us/200#foo",
+  #     "http://httpstat.us/200#bar",
+  #   ]
+  #
+  #   grubby.get_mirrored(urls).uri  # == URI("http://httpstat.us/200#foo")
+  #
+  #   grubby.get_mirrored(urls.take(2))  # raise Mechanize::ResponseCodeError
+  #
+  # @param mirror_uris [Array<URI>, Array<String>]
   # @return [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
   # @raise [Mechanize::ResponseCodeError]
   #   if all +mirror_uris+ fail
@@ -123,32 +137,43 @@ class Grubby < Mechanize
     end
   end
 
-  # Ensures only-once processing of the resource indicated by +target+
-  # for the specified +purpose+.  A list of previously-processed
-  # resource URIs and content hashes is maintained in the Grubby
-  # instance.  The given block is called with the fetched resource only
-  # if the resource's URI and the resource's content hash have not been
+  # Ensures only-once processing of the resource indicated by +uri+ for
+  # the specified +purpose+.  A list of previously-processed resource
+  # URIs and content hashes is maintained in the Grubby instance.  The
+  # given block is called with the fetched resource only if the
+  # resource's URI and the resource's content hash have not been
   # previously processed under the specified +purpose+.
   #
-  # @param target [URI, String, Mechanize::Page::Link, #to_absolute_uri]
-  #   designates the resource to fetch
+  # @example
+  #   grubby = Grubby.new
+  #
+  #   grubby.singleton("https://example.com/foo") do |page|
+  #     # will be executed (first time "/foo")
+  #   end
+  #
+  #   grubby.singleton("https://example.com/foo#bar") do |page|
+  #     # will be skipped (already seen "/foo")
+  #   end
+  #
+  #   grubby.singleton("https://example.com/foo", "again!") do |page|
+  #     # will be executed (new purpose for "/foo")
+  #   end
+  #
+  # @param uri [URI, String]
   # @param purpose [String]
-  #   the purpose of processing the resource
   # @yield [resource]
-  #   processes the resource
   # @yieldparam resource [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
-  #   the fetched resource
   # @return [Boolean]
   #   whether the given block was called
   # @raise [Mechanize::ResponseCodeError]
   #   if fetching the resource results in error (see +Mechanize#get+)
-  def singleton(target, purpose = "")
+  def singleton(uri, purpose = "")
     series = []
 
-    original_uri = target.to_absolute_uri
-    return if try_skip_singleton(original_uri, purpose, series)
+    uri = uri.to_absolute_uri
+    return if try_skip_singleton(uri, purpose, series)
 
-    normalized_uri = normalize_uri(original_uri)
+    normalized_uri = normalize_uri(uri)
     return if try_skip_singleton(normalized_uri, purpose, series)
 
     $log.info("Fetch #{normalized_uri}")

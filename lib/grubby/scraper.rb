@@ -6,14 +6,30 @@ class Grubby::Scraper
   # is nil, an exception will be raised.  To prevent this behavior, set
   # +optional+ to true.
   #
+  # @example
+  #   class GreetingScraper < Grubby::Scraper
+  #     scrapes(:salutation){ source[/\A(hello|good morning)\b/i] }
+  #
+  #     scrapes(:recipient, optional: true) do
+  #       source[/\A#{salutation} ([a-z ]+)/i, 1]
+  #     end
+  #   end
+  #
+  #   scraper = GreetingScraper.new("Hello World!")
+  #   scraper.salutation  # == "Hello"
+  #   scraper.recipient   # == "World"
+  #
+  #   scraper = GreetingScraper.new("Good morning!")
+  #   scraper.salutation  # == "Good morning"
+  #   scraper.recipient   # == nil
+  #
+  #   scraper = GreetingScraper.new("Hey!")  # raises Grubby::Scraper::Error
+  #
   # @param field [Symbol, String]
-  #   name of the scraped value
   # @param optional [Boolean]
-  #   whether to permit a nil scraped value
   # @yield []
-  #   scrapes the value
   # @yieldreturn [Object]
-  #   scraped value
+  # @return [void]
   def self.scrapes(field, optional: false, &block)
     field = field.to_sym
     self.fields << field
@@ -41,7 +57,7 @@ class Grubby::Scraper
     end
   end
 
-  # The names of all scraped values, as defined by {scrapes}.
+  # Fields defined by {scrapes}.
   #
   # @return [Array<Symbol>]
   def self.fields
@@ -140,15 +156,15 @@ class Grubby::Scraper
     end
   end
 
-  # The source being scraped.  Typically a Mechanize pluggable parser
+  # The object being scraped.  Typically a Mechanize pluggable parser
   # such as +Mechanize::Page+.
   #
   # @return [Object]
   attr_reader :source
 
-  # Hash of errors raised by blocks passed to {scrapes}.  If
-  # {initialize} does not raise +Grubby::Scraper::Error+, this Hash will
-  # be empty.
+  # Collected errors raised during {initialize} by blocks passed to
+  # {scrapes}, indexed by field name.  If {initialize} did not raise
+  # +Grubby::Scraper::Error+, this Hash will be empty.
   #
   # @return [Hash<Symbol, StandardError>]
   attr_reader :errors
@@ -215,6 +231,7 @@ class Grubby::Scraper
     end
   end
 
+  # @!visibility private
   class FieldScrapeFailedError < RuntimeError
     def initialize(field, field_error)
       super("`#{field}` raised #{field_error.class}")

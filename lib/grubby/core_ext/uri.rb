@@ -21,7 +21,7 @@ module URI
   # occurrence of that param in the query string.
   #
   # @example
-  #   URI("http://example.com/?foo=a").query_param("foo")          # == "a"
+  #   URI("http://example.com/?foo=a").query_param("foo")  # == "a"
   #
   #   URI("http://example.com/?foo=a&foo=b").query_param("foo")    # == "b"
   #   URI("http://example.com/?foo=a&foo=b").query_param("foo[]")  # == nil
@@ -43,7 +43,8 @@ module URI
   # Raises an exception if the URI is not +absolute?+.
   #
   # @return [self]
-  # @raise [RuntimeError] if the URI is not +absolute?+
+  # @raise [RuntimeError]
+  #   if the URI is not +absolute?+
   def to_absolute_uri
     raise "URI is not absolute: #{self}" unless self.absolute?
     self
