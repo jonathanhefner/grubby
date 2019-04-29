@@ -2,13 +2,19 @@ class Grubby::Scraper
 
   # Defines an attribute reader method named by +field+.  During
   # +initialize+, the given block is called, and the attribute is set to
-  # the block's return value.  By default, if the block's return value
-  # is nil, an exception will be raised.  To prevent this behavior, set
-  # +optional+ to true.
+  # the block's return value.
+  #
+  # By default, if the block's return value is nil, an exception will be
+  # raised.  To prevent this behavior, specify +optional: true+.
+  #
+  # The block may also be evaluated conditionally, based on another
+  # method's return value, using the +:if+ or +:unless+ options.
   #
   # @example
   #   class GreetingScraper < Grubby::Scraper
-  #     scrapes(:salutation){ source[/\A(hello|good morning)\b/i] }
+  #     scrapes(:salutation) do
+  #       source[/\A(hello|good morning)\b/i]
+  #     end
   #
   #     scrapes(:recipient, optional: true) do
   #       source[/\A#{salutation} ([a-z ]+)/i, 1]
@@ -25,35 +31,60 @@ class Grubby::Scraper
   #
   #   scraper = GreetingScraper.new("Hey!")  # raises Grubby::Scraper::Error
   #
+  # @example
+  #   class EmbeddedUrlScraper < Grubby::Scraper
+  #     scrapes(:url, optional: true){ source[%r"\bhttps?://\S+"] }
+  #
+  #     scrapes(:domain, if: :url){ url[%r"://([^/]+)/", 1] }
+  #   end
+  #
+  #   scraper = EmbeddedUrlScraper.new("visit https://example.com/foo for details")
+  #   scraper.url     # == "https://example.com/foo"
+  #   scraper.domain  # == "example.com"
+  #
+  #   scraper = EmbeddedUrlScraper.new("visit our website for details")
+  #   scraper.url     # == nil
+  #   scraper.domain  # == nil
+  #
   # @param field [Symbol, String]
-  # @param optional [Boolean]
+  # @param options [Hash]
+  # @option options :optional [Boolean]
+  # @option options :if [Symbol]
+  # @option options :unless [Symbol]
   # @yield []
   # @yieldreturn [Object]
   # @return [void]
-  def self.scrapes(field, optional: false, &block)
+  def self.scrapes(field, **options, &block)
     field = field.to_sym
     self.fields << field
 
     define_method(field) do
       raise "#{self.class}#initialize does not invoke `super`" unless defined?(@scraped)
-      return @scraped[field] if @scraped.key?(field)
 
-      unless @errors[field]
+      if !@scraped.key?(field) && !@errors.key?(field)
         begin
-          value = instance_eval(&block)
-          if value.nil?
-            raise FieldValueRequiredError.new(field) unless optional
-            $log.debug("#{self.class}##{field} is nil")
+          skip = (options[:if] && !self.send(options[:if])) ||
+            (options[:unless] && self.send(options[:unless]))
+
+          if skip
+            @scraped[field] = nil
+          else
+            @scraped[field] = instance_eval(&block)
+            if @scraped[field].nil?
+              raise FieldValueRequiredError.new(field) unless options[:optional]
+              $log.debug("#{self.class}##{field} is nil")
+            end
           end
-          @scraped[field] = value
         rescue RuntimeError, IndexError => e
           @errors[field] = e
         end
       end
 
-      raise FieldScrapeFailedError.new(field, @errors[field]) if @errors[field]
-
-      @scraped[field]
+      if @errors.key?(field)
+        raise FieldScrapeFailedError.new(field, @errors[field])
+      else
+        @scraped[field]
+      end
     end
   end
 

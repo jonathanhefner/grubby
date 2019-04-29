@@ -6,7 +6,7 @@ class GrubbyScraperTest < Minitest::Test
     scraper = make_scraper(CONTENT)
 
     EXPECTED.each do |field, expected|
-      assert_equal expected, scraper.send(field)
+      assert_equal [expected], [scraper.send(field)]
     end
   end
 
@@ -23,11 +23,18 @@ class GrubbyScraperTest < Minitest::Test
     assert_nil scraper.opt_val
   end
 
+  def test_obeys_conditional_modifiers
+    scraper = make_scraper(CONTENT.merge(opt: nil))
+
+    assert_nil scraper.opt_word
+    refute_nil scraper.opt_miss
+  end
+
   def test_captures_all_errors
     error = assert_raises(Grubby::Scraper::Error){ make_scraper({}) }
 
     assert_instance_of MyScraper, error.scraper
-    EXPECTED.keys.each do |field|
+    EXPECTED.compact.keys.each do |field|
       assert_kind_of StandardError, error.scraper.errors[field]
     end
   end
@@ -37,7 +44,7 @@ class GrubbyScraperTest < Minitest::Test
 
     assert_match "req_val", error.message
     assert_match "opt_val", error.message
-    refute_match "dup_val", error.message
+    refute_match "opt_word", error.message
   end
 
   def test_filters_error_backtrace
@@ -66,7 +73,7 @@ class GrubbyScraperTest < Minitest::Test
     scraper = make_scraper(CONTENT)
 
     EXPECTED.each do |field, expected|
-      assert_equal expected, scraper[field]
+      assert_equal [expected], [scraper[field]]
     end
   end
 
@@ -161,8 +168,9 @@ class GrubbyScraperTest < Minitest::Test
 
   EXPECTED = {
     req_val: "required value",
-    dup_val: "required value",
     opt_val: "optional value",
+    opt_word: "optional",
+    opt_miss: nil,
   }
 
   INHERITING_EXPECTED = EXPECTED.merge(
@@ -178,8 +186,12 @@ class GrubbyScraperTest < Minitest::Test
       source.content.fetch(:opt)
     end
 
-    scrapes :dup_val do
-      req_val
+    scrapes :opt_word, if: :opt_val do
+      opt_val[/\w+/]
+    end
+
+    scrapes :opt_miss, unless: :opt_val do
+      true
     end
   end
 
