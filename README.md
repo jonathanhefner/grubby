@@ -131,14 +131,14 @@ for a complete API listing.
   - [String#assert_match!](http://www.rubydoc.info/gems/mini_sanity/String:assert_match%21)
 - [pleasant_path](https://rubygems.org/gems/pleasant_path)
   ([docs](http://www.rubydoc.info/gems/pleasant_path/))
+  - [Pathname#available_name](http://www.rubydoc.info/gems/pleasant_path/Pathname:available_name)
   - [Pathname#dirs](http://www.rubydoc.info/gems/pleasant_path/Pathname:dirs)
-  - [Pathname#dirs_r](http://www.rubydoc.info/gems/pleasant_path/Pathname:dirs_r)
   - [Pathname#files](http://www.rubydoc.info/gems/pleasant_path/Pathname:files)
-  - [Pathname#files_r](http://www.rubydoc.info/gems/pleasant_path/Pathname:files_r)
   - [Pathname#make_dirname](http://www.rubydoc.info/gems/pleasant_path/Pathname:make_dirname)
+  - [Pathname#make_file](http://www.rubydoc.info/gems/pleasant_path/Pathname:make_file)
+  - [Pathname#move_as](http://www.rubydoc.info/gems/pleasant_path/Pathname:move_as)
   - [Pathname#rename_basename](http://www.rubydoc.info/gems/pleasant_path/Pathname:rename_basename)
   - [Pathname#rename_extname](http://www.rubydoc.info/gems/pleasant_path/Pathname:rename_extname)
-  - [Pathname#touch_file](http://www.rubydoc.info/gems/pleasant_path/Pathname:touch_file)
 - [ryoba](https://rubygems.org/gems/ryoba)
   ([docs](http://www.rubydoc.info/gems/ryoba/))
   - [Nokogiri::XML::Node#matches!](http://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Node:matches%21)
@@ -148,6 +148,7 @@ for a complete API listing.
   - [Nokogiri::XML::Searchable#ancestors!](http://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:ancestors%21)
   - [Nokogiri::XML::Searchable#at!](http://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:at%21)
   - [Nokogiri::XML::Searchable#search!](http://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:search%21)
+
 
 ## Installation
 
