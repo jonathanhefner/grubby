@@ -1,6 +1,5 @@
 require "active_support/all"
 require "casual_support"
-require "dumb_delimited"
 require "gorge"
 require "mechanize"
 require "mini_sanity"
@@ -80,7 +79,12 @@ class Grubby < Mechanize
   # @return [Pathname]
   def journal=(path)
     @journal = path&.to_pathname&.touch_file
-    @seen = @journal ? SingletonKey.parse_file(@journal).index_to{ true } : {}
+    @seen = if @journal
+        require "csv"
+        CSV.read(@journal).map{|row| SingletonKey.new(*row) }.index_to{ true }
+      else
+        {}
+      end
     @journal
   end
 
@@ -183,7 +187,9 @@ class Grubby < Mechanize
 
     yield resource unless skip
 
-    series.append_to_file(journal) if journal
+    CSV.open(journal, "a") do |csv|
+      series.each{|singleton_key| csv << singleton_key }
+    end if journal
 
     !skip
   end
@@ -191,7 +197,8 @@ class Grubby < Mechanize
 
   private
 
-  SingletonKey = DumbDelimited[:purpose, :target]
+  # @!visibility private
+  SingletonKey = Struct.new(:purpose, :target)
 
   def try_skip_singleton(target, purpose, series)
     series << SingletonKey.new(purpose, target.to_s)

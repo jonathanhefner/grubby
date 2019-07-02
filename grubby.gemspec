@@ -22,7 +22,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activesupport", "~> 5.0"
   spec.add_runtime_dependency "casual_support", "~> 3.0"
-  spec.add_runtime_dependency "dumb_delimited", "~> 1.0"
   spec.add_runtime_dependency "gorge", "~> 1.0"
   spec.add_runtime_dependency "mechanize", "~> 2.7"
   spec.add_runtime_dependency "mini_sanity", "~> 1.0"
