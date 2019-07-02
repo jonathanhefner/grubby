@@ -11,7 +11,7 @@ below, or browse the [full documentation].
 
 ## Examples
 
-The following example scrapes the [Hacker News] front page:
+The following example scrapes stories from the [Hacker News] front page:
 
 ```ruby
 require "grubby"
@@ -19,38 +19,31 @@ require "grubby"
 class HackerNews < Grubby::PageScraper
 
   scrapes(:items) do
-    page.search!(".athing").map{|item| HackerNewsItem.new(item) }
+    page.search!(".athing").map{|el| Item.new(el) }
+  end
+
+  class Item < Grubby::Scraper
+    scrapes(:story_link){ source.at!("a.storylink") }
+    scrapes(:story_uri) { story_link.uri }
+    scrapes(:title) { story_link.text }
   end
 
 end
-
-class HackerNewsItem < Grubby::Scraper
-
-  scrapes(:title) { @row1.at!(".storylink").text }
-  scrapes(:submitter) { @row2.at!(".hnuser").text }
-  scrapes(:story_uri) { URI.join(@base_uri, @row1.at!(".storylink")["href"]) }
-  scrapes(:comments_uri) { URI.join(@base_uri, @row2.at!(".age a")["href"]) }
-
-  def initialize(source)
-    @row1 = source
-    @row2 = source.next_sibling
-    @base_uri = source.document.url
-    super
-  end
-
-end
-
-grubby = Grubby.new
 
 # The following line will raise an exception if anything goes wrong
 # during the scraping process.  For example, if the structure of the
-# HTML does not match expectations, either due to a bad assumption or
-# due to a site-wide change, the script will terminate immediately with
-# a relevant error message.  This prevents bad values from propogating
-# and causing hard-to-trace errors.
-hn = HackerNews.new(grubby.get("https://news.ycombinator.com/news"))
+# HTML does not match expectations, either due to incorrect assumptions
+# or a site change, the script will terminate immediately with a helpful
+# error message.  This prevents bad data from propagating and causing
+# hard-to-trace errors.
+hn = HackerNews.scrape("https://news.ycombinator.com/news")
 
-puts hn.items.take(10).map(&:title) # your scraping logic goes here
+# Your processing logic goes here:
+hn.items.take(10).each do |item|
+  puts "* #{item.title}"
+  puts "  #{item.story_uri}"
+  puts
+end
 ```
 
 [Hacker News]: https://news.ycombinator.com/news
