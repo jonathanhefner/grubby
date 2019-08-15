@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "grubby"
   spec.version       = GRUBBY_VERSION
   spec.authors       = ["Jonathan Hefner"]
-  spec.email         = ["jonathan.hefner@gmail.com"]
+  spec.email         = ["jonathan@hefner.pro"]
 
   spec.summary       = %q{Fail-fast web scraping}
   spec.homepage      = "https://github.com/jonathanhefner/grubby"
