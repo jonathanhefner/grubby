@@ -21,7 +21,12 @@ class URITest < Minitest::Test
       assert_equal expected, uri.query_param(key)
     end
 
-    assert_nil uri.query_param("miss")
+    assert_nil uri.query_param("nope")
+  end
+
+  def test_query_param_with_no_query
+    assert_nil URI("http://localhost/").query_param("nope")
+    assert_nil URI("http://localhost/?").query_param("nope")
   end
 
   def test_to_absolute_uri_with_absolute_uri
