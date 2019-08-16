@@ -15,15 +15,13 @@ class GrubbyPageScraperTest < Minitest::Test
 
   def test_scrape_file
     Dir.mktmpdir do |dir|
-      path = File.join(dir, "file.html")
+      path = File.join(dir, "some file.html")
       h1 = "Hello"
       File.write(path, "<h1>#{h1}</h1>")
       scraper = MyScraper.scrape_file(path)
 
       assert_instance_of MyScraper, scraper
       assert_equal h1, scraper.h1
-      assert_equal "file", scraper.page.uri.scheme
-      assert_equal path, scraper.page.uri.path
       assert_same $grubby, scraper.page.mech
     end
   end

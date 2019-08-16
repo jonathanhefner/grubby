@@ -15,15 +15,13 @@ class GrubbyJsonScraperTest < Minitest::Test
 
   def test_scrape_file
     Dir.mktmpdir do |dir|
-      path = File.join(dir, "file.json")
+      path = File.join(dir, "some file.json")
       hi = "Hello"
       File.write(path, "{ \"hi\": \"#{hi}\" }")
       scraper = MyScraper.scrape_file(path)
 
       assert_instance_of MyScraper, scraper
       assert_equal hi, scraper.hi
-      assert_equal "file", scraper.source.uri.scheme
-      assert_equal path, scraper.source.uri.path
     end
   end
 

@@ -24,9 +24,7 @@ class Grubby::JsonScraper < Grubby::Scraper
   # @param path [String]
   # @return [Grubby::JsonScraper]
   def self.scrape_file(path)
-    uri = URI.join("file:///", File.expand_path(path))
-    body = File.read(path)
-    self.new(Grubby::JsonParser.new(uri, nil, body, "200"))
+    self.new(Grubby::JsonParser.read_local(path))
   end
 
 end

@@ -25,9 +25,7 @@ class Grubby::PageScraper < Grubby::Scraper
   # @param agent [Mechanize]
   # @return [Grubby::PageScraper]
   def self.scrape_file(path, agent = $grubby)
-    uri = URI.join("file:///", File.expand_path(path))
-    body = File.read(path)
-    self.new(Mechanize::Page.new(uri, nil, body, "200", agent))
+    self.new(Mechanize::Page.read_local(path).tap{|page| page.mech = agent })
   end
 
 end
