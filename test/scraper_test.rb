@@ -111,38 +111,33 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   def test_each
-    [nil, :next_uri, :next_page].each do |method|
-      expected_urls = (1..2).map{|i| UrlScraper.url(i) }.reverse
-      expected_urls.each{|url| url << "##{method}" } if method
-      actual_urls = []
+    expected_urls = [3, 2, 1].map{|i| UrlScraper.url(i) }
+    actual_urls = []
 
-      UrlScraper.each(expected_urls.first, { next_method: method }.compact) do |scraper|
-        assert_instance_of UrlScraper, scraper
-        assert_same $grubby, scraper.source.mech
-        actual_urls << scraper.url
-      end
-      assert_equal expected_urls, actual_urls
+    UrlScraper.each(expected_urls.first) do |scraper|
+      assert_instance_of UrlScraper, scraper
+      assert_same $grubby, scraper.source.mech
+      actual_urls << scraper.url
     end
-  end
-
-  def test_each_with_agent
-    agent = Mechanize.new
-
-    UrlScraper.each(UrlScraper.url(2), agent) do |scraper|
-      assert_same agent, scraper.source.mech
-    end
+    assert_equal expected_urls, actual_urls
   end
 
   def test_each_without_block
-    [nil, :next_uri, :next_page].each do |method|
-      args = [UrlScraper.url(2), ({ next_method: method } if method)].compact
-      expected_urls = []
-      UrlScraper.each(*args){|scraper| expected_urls << scraper.url }
-      actual = UrlScraper.each(*args)
+    expected_urls = [3, 2, 1].map{|i| UrlScraper.url(i) }
 
-      assert_kind_of Enumerator, actual
-      assert_equal expected_urls, actual.map(&:url)
-    end
+    actual_enum = UrlScraper.each(expected_urls.first)
+    assert_kind_of Enumerator, actual_enum
+
+    actual_scrapers = actual_enum.to_a
+    actual_scrapers.each{|scraper| assert_instance_of UrlScraper, scraper }
+    assert_equal expected_urls, actual_scrapers.map(&:url)
+  end
+
+  def test_each_with_next_method
+    expected_urls = [3, 2, 1].map{|i| UrlScraper.url(i) + "#next_uri" }
+    actual_urls = UrlScraper.each(expected_urls.first, next_method: :next_uri).map(&:url)
+
+    assert_equal expected_urls, actual_urls
   end
 
   def test_each_with_invalid_next_method
@@ -157,6 +152,22 @@ class GrubbyScraperTest < Minitest::Test
       UrlScraper.each(UrlScraper.url(2), next_method: :nope)
     end
     assert_equal :nope, error.name
+  end
+
+  def test_each_over_page_objects
+    expected_urls = [3, 2, 1].map{|i| UrlScraper.url(i) + "#next_page" }
+    start_page = Grubby.new.get(expected_urls.first)
+    actual_urls = UrlScraper.each(start_page, next_method: :next_page).map(&:url)
+
+    assert_equal expected_urls, actual_urls
+  end
+
+  def test_each_with_agent
+    agent = Mechanize.new
+
+    UrlScraper.each(UrlScraper.url(3), agent) do |scraper|
+      assert_same agent, scraper.source.mech
+    end
   end
 
   private
@@ -235,11 +246,11 @@ class GrubbyScraperTest < Minitest::Test
     end
 
     def next_uri
-      self.next.try{|url| URI(url + "#next_uri") }
+      self.next.try{|next_url| URI(next_url + "#next_uri") }
     end
 
     def next_page
-      self.next.try{|url| source.mech.get(url + "#next_page") }
+      self.next.try{|next_url| source.mech.get(next_url + "#next_page") }
     end
   end
 

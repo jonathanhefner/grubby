@@ -127,10 +127,10 @@ class Grubby::Scraper
     self.new(agent.get(url))
   end
 
-  # Iterates a series of pages, starting at +start_url+.  For each page,
-  # the Scraper class is instantiated and passed to the given block.
-  # Subsequent pages in the series are determined by invoking
-  # +next_method+ on each previous scraper instance.
+  # Iterates a series of pages, starting at +start+.  The Scraper class
+  # is instantiated with each page, and each instance is passed to the
+  # given block.  Subsequent pages in the series are determined by
+  # invoking the +next_method+ method on each previous scraper instance.
   #
   # Iteration stops when the +next_method+ method returns nil.  If the
   # +next_method+ method returns a String or URI, that value will be
@@ -163,7 +163,7 @@ class Grubby::Scraper
   #     scraper.page_param  # == "1", "2", "3", ...
   #   end
   #
-  # @param start_url [String, URI]
+  # @param start [String, URI, Mechanize::Page, Mechanize::File]
   # @param agent [Mechanize]
   # @param next_method [Symbol]
   # @yield [scraper]
@@ -171,14 +171,14 @@ class Grubby::Scraper
   # @return [void]
   # @raise [NoMethodError]
   #   if Scraper class does not implement +next_method+
-  def self.each(start_url, agent = $grubby, next_method: :next)
+  def self.each(start, agent = $grubby, next_method: :next)
     unless self.method_defined?(next_method)
       raise NoMethodError.new(nil, next_method), "#{self} does not define `#{next_method}`"
     end
 
-    return to_enum(:each, start_url, agent, next_method: next_method) unless block_given?
+    return to_enum(:each, start, agent, next_method: next_method) unless block_given?
 
-    current = start_url
+    current = start
     while current
       current = agent.get(current) if current.is_a?(String) || current.is_a?(URI)
       scraper = self.new(current)
