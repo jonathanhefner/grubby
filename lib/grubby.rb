@@ -65,6 +65,9 @@ class Grubby < Mechanize
     # Set up configurable rate limiting, and choose a reasonable default
     # rate limit.
     self.pre_connect_hooks << Proc.new{ self.send(:sleep_between_requests) }
+    self.post_connect_hooks << Proc.new do |agent, uri, response, body|
+      self.send(:skip_next_sleep_between_requests) if response.code.to_s.start_with?("3")
+    end
     self.time_between_requests = 1.0
 
     self.journal = journal
@@ -224,6 +227,10 @@ class Grubby < Mechanize
     sleep_duration = @last_request_at + delay_duration - Time.now.to_f
     sleep(sleep_duration) if sleep_duration > 0
     @last_request_at = Time.now.to_f
+  end
+
+  def skip_next_sleep_between_requests
+    @last_request_at = 0.0
   end
 
 end

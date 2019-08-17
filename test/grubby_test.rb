@@ -39,6 +39,17 @@ class GrubbyTest < Mechanize::TestCase
     assert_includes ((min_amount - 0.1)..max_amount), $sleep_last_amount
   end
 
+  def test_sleep_between_requests_after_redirect
+    $sleep_calls = 0
+    redirect_url = "http://localhost/redirect"
+    grubby = Grubby.new
+
+    actual_url = grubby.get(redirect_url).uri.to_s
+    refute_equal redirect_url, actual_url # sanity check
+    grubby.get(redirect_url)
+    assert_equal 1, $sleep_calls
+  end
+
   def test_ok_predicate_with_success_code
     assert Grubby.new.ok?(make_uris(1).first)
   end
