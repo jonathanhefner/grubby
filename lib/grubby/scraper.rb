@@ -56,7 +56,7 @@ class Grubby::Scraper
   # @return [void]
   def self.scrapes(field, **options, &block)
     field = field.to_sym
-    self.fields << field
+    (self.fields << field).uniq!
 
     define_method(field) do
       raise "#{self.class}#initialize does not invoke `super`" unless defined?(@scraped)

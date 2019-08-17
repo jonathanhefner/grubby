@@ -174,6 +174,8 @@ class GrubbyScraperTest < Minitest::Test
   }
 
   INHERITING_EXPECTED = EXPECTED.merge(
+    opt_val: EXPECTED[:opt_val].swapcase,
+    opt_word: EXPECTED[:opt_word].swapcase,
     add_val: EXPECTED[:req_val],
   )
 
@@ -196,6 +198,10 @@ class GrubbyScraperTest < Minitest::Test
   end
 
   class MyInheritingScraper < MyScraper
+    scrapes :opt_val, optional: true do
+      source.content.fetch(:opt)&.swapcase
+    end
+
     scrapes :add_val do
       req_val
     end
