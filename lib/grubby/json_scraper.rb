@@ -22,9 +22,10 @@ class Grubby::JsonScraper < Grubby::Scraper
   #   MyScraper.scrape_file("path/to/local_file.json").class  # == MyScraper
   #
   # @param path [String]
+  # @param agent [Mechanize]
   # @return [Grubby::JsonScraper]
-  def self.scrape_file(path)
-    self.new(Grubby::JsonParser.read_local(path))
+  def self.scrape_file(path, agent = $grubby)
+    self.new(Grubby::JsonParser.read_local(path).tap{|parser| parser.mech = agent })
   end
 
 end

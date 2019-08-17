@@ -156,8 +156,10 @@ class GrubbyTest < Mechanize::TestCase
 
   def test_json_pluggable_parser
     grubby = Grubby.new
+    parser = grubby.get("http://localhost/response_code?code=200&ct=application/json")
 
-    assert_equal Grubby::JsonParser, grubby.pluggable_parser["application/json"]
+    assert_instance_of Grubby::JsonParser, parser
+    assert_same grubby, parser.mech
   end
 
 

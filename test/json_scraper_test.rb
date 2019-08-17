@@ -22,6 +22,18 @@ class GrubbyJsonScraperTest < Minitest::Test
 
       assert_instance_of MyScraper, scraper
       assert_equal hi, scraper.hi
+      assert_same $grubby, scraper.source.mech
+    end
+  end
+
+  def test_scrape_file_with_agent
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "file.json")
+      File.write(path, "{ \"hi\": \"...\" }")
+      grubby = Grubby.new
+      scraper = MyScraper.scrape_file(path, grubby)
+
+      assert_same grubby, scraper.source.mech
     end
   end
 
