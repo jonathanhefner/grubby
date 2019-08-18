@@ -39,6 +39,20 @@ class GrubbyTest < Mechanize::TestCase
     assert_includes ((min_amount - 0.1)..max_amount), $sleep_last_amount
   end
 
+  def test_time_between_requests_begins_after_request_finishes
+    grubby = Grubby.new
+    grubby.time_between_requests = 1.0
+    # use content-encoding hook so that a time recorded by a pre-connect
+    # hook will be disregarded, while a time recorded by a post-connect
+    # hook will not
+    grubby.content_encoding_hooks << Proc.new{ grubby.send(:mark_last_request_time, nil) }
+
+    grubby.get("http://localhost")
+    $sleep_last_amount = 0.0
+    grubby.get("http://localhost")
+    assert_operator $sleep_last_amount, :>, 0.0
+  end
+
   def test_sleep_between_requests_after_redirect
     $sleep_calls = 0
     redirect_url = "http://localhost/redirect"
