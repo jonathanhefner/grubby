@@ -47,4 +47,8 @@ class GrubbyJsonParserTest < Minitest::Test
     assert_equal options, Grubby::JsonParser.json_parse_options
   end
 
+  def test_json_parse_options_defaults_are_safe
+    refute Grubby::JsonParser.json_parse_options[:create_additions]
+  end
+
 end

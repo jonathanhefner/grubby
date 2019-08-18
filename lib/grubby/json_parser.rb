@@ -10,14 +10,7 @@ class Grubby::JsonParser < Mechanize::File
   #
   # @return [Hash]
   def self.json_parse_options
-    @json_parse_options ||= {
-      max_nesting: false,
-      allow_nan: false,
-      symbolize_names: false,
-      create_additions: false,
-      object_class: Hash,
-      array_class: Array,
-    }
+    @json_parse_options ||= JSON.load_default_options.merge(create_additions: false)
   end
 
   # Sets the options to use when parsing JSON.  The entire options Hash
