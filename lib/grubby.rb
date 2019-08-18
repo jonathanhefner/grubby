@@ -84,9 +84,9 @@ class Grubby < Mechanize
     @journal = path&.to_pathname&.touch_file
     @seen = if @journal
         require "csv"
-        CSV.read(@journal).map{|row| SingletonKey.new(*row) }.index_to{ true }
+        CSV.read(@journal).map{|row| SingletonKey.new(*row) }.to_set
       else
-        {}
+        Set.new
       end
     @journal
   end
@@ -205,7 +205,7 @@ class Grubby < Mechanize
 
   def try_skip_singleton(target, purpose, series)
     series << SingletonKey.new(purpose, target.to_s)
-    if series.uniq!.nil? && @seen.displace(series.last, true)
+    if series.uniq!.nil? && !@seen.add?(series.last)
       seen_info = series.length > 1 ? "seen #{series.last.target}" : "seen"
       $log.info("Skip #{series.first.target} (#{seen_info})")
       true
