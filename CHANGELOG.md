@@ -1,3 +1,15 @@
+## 1.2.1
+
+* Add `JsonParser#mech` attribute for parity with `Mechanize::Page#mech`
+* Ensure time spent fetching a response does not count toward the time
+  to sleep between requests
+* Prevent sleep between requests when following a redirect
+* Prevent duplicates in `Scraper.fields`
+* Fix `URI#query_param` when query is nil
+* Fix `PageScraper.scrape_file` and `JsonScraper.scrape_file` when path
+  contains characters that need to be URI-encoded
+
+
 ## 1.2.0
 
 * Add `Grubby#journal=`
