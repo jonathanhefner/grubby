@@ -17,17 +17,15 @@ The following example scrapes stories from the [Hacker News] front page:
 require "grubby"
 
 class HackerNews < Grubby::PageScraper
-
   scrapes(:items) do
     page.search!(".athing").map{|el| Item.new(el) }
   end
 
   class Item < Grubby::Scraper
     scrapes(:story_link){ source.at!("a.storylink") }
-    scrapes(:story_uri) { story_link.uri }
-    scrapes(:title) { story_link.text }
+    scrapes(:story_uri){ story_link.uri }
+    scrapes(:title){ story_link.text }
   end
-
 end
 
 # The following line will raise an exception if anything goes wrong
