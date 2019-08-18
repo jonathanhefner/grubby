@@ -5,7 +5,7 @@ class Grubby::JsonParser < Mechanize::File
   # will be applied to all future parsing.
   #
   # For information about available options, see
-  # {http://ruby-doc.org/stdlib/libdoc/json/rdoc/JSON.html#method-i-parse
+  # {https://docs.ruby-lang.org/en/trunk/JSON.html#method-i-parse
   # +JSON.parse+}.
   #
   # @return [Hash]
@@ -18,7 +18,7 @@ class Grubby::JsonParser < Mechanize::File
   # parsing.  To set options individually, see {json_parse_options}.
   #
   # For information about available options, see
-  # {http://ruby-doc.org/stdlib/libdoc/json/rdoc/JSON.html#method-i-parse
+  # {https://docs.ruby-lang.org/en/trunk/JSON.html#method-i-parse
   # +JSON.parse+}.
   #
   # @param options [Hash]
