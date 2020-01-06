@@ -1,10 +1,5 @@
 require "bundler/gem_tasks"
 require "rake/testtask"
-require "yard"
-
-
-YARD::Rake::YardocTask.new(:doc) do |t|
-end
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
