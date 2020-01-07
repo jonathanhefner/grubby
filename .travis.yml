@@ -1,5 +1,9 @@
-sudo: false
 language: ruby
+
 rvm:
-  - 2.2.5
-before_install: gem install bundler -v 1.15.1
+  - 2.6
+  - 2.7
+
+gemfile:
+  - gemfiles/activesupport-5.0.gemfile
+  - gemfiles/activesupport-6.0.gemfile

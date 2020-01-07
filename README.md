@@ -1,4 +1,4 @@
-# grubby
+# grubby [![Build Status](https://travis-ci.org/jonathanhefner/grubby.svg?branch=master)](https://travis-ci.org/jonathanhefner/grubby)
 
 [Fail-fast] web scraping.  *grubby* adds a layer of utility and
 error-checking atop the marvelous [Mechanize gem].  See API summary
