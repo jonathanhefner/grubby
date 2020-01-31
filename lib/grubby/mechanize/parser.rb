@@ -2,15 +2,15 @@ require "fileutils"
 
 module Mechanize::Parser
 
-  # Saves the payload to a specified directory, but using the default
+  # Saves the payload to a specified directory, using the default
   # filename suggested by the server.  If a file with that name already
   # exists, this method will try to find a free filename by appending
-  # numbers to the original name.  Returns the full path of the saved
+  # numbers to the default filename.  Returns the full path of the saved
   # file.
   #
-  # NOTE: this method expects a +#save!+ method to be defined by the
-  # class extending +Mechanize::Parser+, e.g. +Mechanize::File#save!+
-  # and +Mechanize::Download#save!+.
+  # @note This method expects a +#save!+ method to be defined by the
+  #   class extending +Mechanize::Parser+, e.g. +Mechanize::File#save!+
+  #   and +Mechanize::Download#save!+.
   #
   # @param directory [String]
   # @return [String]
@@ -23,14 +23,14 @@ module Mechanize::Parser
     path
   end
 
-  # Saves the payload to a specified directory, but using the default
+  # Saves the payload to a specified directory, using the default
   # filename suggested by the server.  If a file with that name already
   # exists, that file will be overwritten.  Returns the full path of the
   # saved file.
   #
-  # NOTE: this method expects a +#save!+ method to be defined by the
-  # class extending +Mechanize::Parser+, e.g. +Mechanize::File#save!+
-  # and +Mechanize::Download#save!+.
+  # @note This method expects a +#save!+ method to be defined by the
+  #   class extending +Mechanize::Parser+, e.g. +Mechanize::File#save!+
+  #   and +Mechanize::Download#save!+.
   #
   # @param directory [String]
   # @return [String]

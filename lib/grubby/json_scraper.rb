@@ -6,6 +6,8 @@ class Grubby::JsonScraper < Grubby::Scraper
   attr_reader :json
 
   # @param source [Grubby::JsonParser]
+  # @raise [Grubby::Scraper::Error]
+  #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
     @json = source.assert_kind_of!(Grubby::JsonParser).json
     super
@@ -19,11 +21,13 @@ class Grubby::JsonScraper < Grubby::Scraper
   #     # ...
   #   end
   #
-  #   MyScraper.scrape_file("path/to/local_file.json").class  # == MyScraper
+  #   MyScraper.scrape_file("path/to/local_file.json")  # === MyScraper
   #
   # @param path [String]
   # @param agent [Mechanize]
   # @return [Grubby::JsonScraper]
+  # @raise [Grubby::Scraper::Error]
+  #   if any {Scraper.scrapes} blocks fail
   def self.scrape_file(path, agent = $grubby)
     self.new(Grubby::JsonParser.read_local(path).tap{|parser| parser.mech = agent })
   end

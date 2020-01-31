@@ -23,9 +23,9 @@ class Grubby < Mechanize
 
   VERSION = GRUBBY_VERSION
 
-  # The enforced minimum amount of time to wait between requests, in
-  # seconds.  If the value is a Range, a random number within the Range
-  # is chosen for each request.
+  # The minimum amount of time enforced between requests, in seconds.
+  # If the value is a Range, a random number within the Range is chosen
+  # for each request.
   #
   # @return [Integer, Float, Range<Integer>, Range<Float>]
   attr_accessor :time_between_requests
@@ -38,7 +38,7 @@ class Grubby < Mechanize
 
   # @param journal [Pathname, String]
   #   Optional journal file used to ensure only-once processing of
-  #   resources by {singleton} across multiple program runs.
+  #   resources by {singleton} across multiple program runs
   def initialize(journal = nil)
     super()
 
@@ -91,9 +91,10 @@ class Grubby < Mechanize
     @journal
   end
 
-  # Calls +#head+ and returns true if the result has response code
-  # "200".  Unlike +#head+, error response codes (e.g. "404", "500")
-  # do not cause a +Mechanize::ResponseCodeError+ to be raised.
+  # Calls +#head+ and returns true if a response code "200" is received,
+  # false otherwise.  Unlike +#head+, error response codes (e.g. "404",
+  # "500") do not result in a +Mechanize::ResponseCodeError+ being
+  # raised.
   #
   # @param uri [URI, String]
   # @return [Boolean]
@@ -106,7 +107,7 @@ class Grubby < Mechanize
   end
 
   # Calls +#get+ with each of +mirror_uris+ until a successful
-  # ("200 OK") response is recieved, and returns that +#get+ result.
+  # ("200 OK") response is received, and returns that +#get+ result.
   # Rescues and logs +Mechanize::ResponseCodeError+ failures for all but
   # the last mirror.
   #
@@ -114,13 +115,13 @@ class Grubby < Mechanize
   #   grubby = Grubby.new
   #
   #   urls = [
-  #     "http://httpstat.us/404",
-  #     "http://httpstat.us/500",
-  #     "http://httpstat.us/200#foo",
-  #     "http://httpstat.us/200#bar",
+  #     "https://httpstat.us/404",
+  #     "https://httpstat.us/500",
+  #     "https://httpstat.us/200?foo",
+  #     "https://httpstat.us/200?bar",
   #   ]
   #
-  #   grubby.get_mirrored(urls).uri  # == URI("http://httpstat.us/200#foo")
+  #   grubby.get_mirrored(urls).uri  # == URI("https://httpstat.us/200?foo")
   #
   #   grubby.get_mirrored(urls.take(2))  # raise Mechanize::ResponseCodeError
   #
@@ -145,33 +146,44 @@ class Grubby < Mechanize
   end
 
   # Ensures only-once processing of the resource indicated by +uri+ for
-  # the specified +purpose+.  A list of previously-processed resource
-  # URIs and content hashes is maintained in the Grubby instance.  The
-  # given block is called with the fetched resource only if the
-  # resource's URI and the resource's content hash have not been
-  # previously processed under the specified +purpose+.
+  # the specified +purpose+.  The given block is executed if and only if
+  # the Grubby instance has not recorded a previous call to +singleton+
+  # for the same resource and purpose.
+  #
+  # Note that the resource is identified by both its URI and its content
+  # hash.  The latter prevents superfluous and rearranged URI query
+  # string parameters from interfering with only-once processing.
+  #
+  # If {journal} is set, and if the block does not raise an exception,
+  # the resource and purpose are logged to the journal file.  This
+  # enables only-once processing across multiple program runs.  It also
+  # provides a means to resume batch processing after an unexpected
+  # termination.
   #
   # @example
   #   grubby = Grubby.new
   #
-  #   grubby.singleton("https://example.com/foo") do |page|
-  #     # will be executed (first time "/foo")
+  #   grubby.singleton("https://example.com/posts") do |page|
+  #     # will be executed (first time "/posts")
   #   end
   #
-  #   grubby.singleton("https://example.com/foo#bar") do |page|
-  #     # will be skipped (already seen "/foo")
+  #   grubby.singleton("https://example.com/posts") do |page|
+  #     # will not be executed (previously processed "/posts" URI)
   #   end
   #
-  #   grubby.singleton("https://example.com/foo", "again!") do |page|
-  #     # will be executed (new purpose for "/foo")
+  #   grubby.singleton("https://example.com/posts?page=1") do |page|
+  #     # will not be executed (previously processed "/posts" content hash)
+  #   end
+  #
+  #   grubby.singleton("https://example.com/posts", "again!") do |page|
+  #     # will be executed (new purpose for "/posts")
   #   end
   #
   # @param uri [URI, String]
   # @param purpose [String]
-  # @yield [resource]
   # @yieldparam resource [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
   # @return [Boolean]
-  #   whether the given block was called
+  #   Whether the given block was executed
   # @raise [Mechanize::ResponseCodeError]
   #   if fetching the resource results in error (see +Mechanize#get+)
   def singleton(uri, purpose = "")

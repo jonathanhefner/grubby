@@ -1,7 +1,8 @@
 class Mechanize::Page
 
   # @!method search!(*queries)
-  # See Ryoba's +Nokogiri::XML::Searchable#search!+.
+  # See ryoba's {https://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:search%21
+  # +Nokogiri::XML::Searchable#search!+}.
   #
   # @param queries [Array<String>]
   # @return [Nokogiri::XML::NodeSet]
@@ -10,7 +11,8 @@ class Mechanize::Page
   def_delegators :parser, :search!
 
   # @!method at!(*queries)
-  # See Ryoba's +Nokogiri::XML::Searchable#at!+.
+  # See ryoba's {https://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:at%21
+  # +Nokogiri::XML::Searchable#at!+}.
   #
   # @param queries [Array<String>]
   # @return [Nokogiri::XML::Element]

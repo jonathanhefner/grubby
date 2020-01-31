@@ -3,9 +3,9 @@ module URI
   # Returns the basename of the URI's +path+, a la +File.basename+.
   #
   # @example
-  #   URI("http://example.com/foo/bar").basename  # == "bar"
-  #   URI("http://example.com/foo").basename      # == "foo"
-  #   URI("http://example.com/").basename         # == ""
+  #   URI("https://example.com/foo/bar").basename  # == "bar"
+  #   URI("https://example.com/foo").basename      # == "foo"
+  #   URI("https://example.com/").basename         # == ""
   #
   # @return [String]
   def basename
@@ -20,16 +20,16 @@ module URI
   # Otherwise, only the last occurrence is returned.
   #
   # @example
-  #   URI("http://example.com/?foo=a").query_param("foo")  # == "a"
+  #   URI("https://example.com/?foo=a").query_param("foo")  # == "a"
   #
-  #   URI("http://example.com/?foo=a&foo=b").query_param("foo")    # == "b"
-  #   URI("http://example.com/?foo=a&foo=b").query_param("foo[]")  # == nil
+  #   URI("https://example.com/?foo=a&foo=b").query_param("foo")    # == "b"
+  #   URI("https://example.com/?foo=a&foo=b").query_param("foo[]")  # == nil
   #
-  #   URI("http://example.com/?foo[]=a&foo[]=b").query_param("foo")    # == nil
-  #   URI("http://example.com/?foo[]=a&foo[]=b").query_param("foo[]")  # == ["a", "b"]
+  #   URI("https://example.com/?foo[]=a&foo[]=b").query_param("foo")    # == nil
+  #   URI("https://example.com/?foo[]=a&foo[]=b").query_param("foo[]")  # == ["a", "b"]
   #
-  #   URI("http://example.com/?foo[][x]=a&foo[][y]=b").query_param("foo[]")     # == nil
-  #   URI("http://example.com/?foo[][x]=a&foo[][y]=b").query_param("foo[][x]")  # == ["a"]
+  #   URI("https://example.com/?foo[][x]=a&foo[][y]=b").query_param("foo[]")     # == nil
+  #   URI("https://example.com/?foo[][x]=a&foo[][y]=b").query_param("foo[][x]")  # == ["a"]
   #
   # @param name [String]
   # @return [String, Array<String>, nil]
@@ -38,7 +38,8 @@ module URI
     (values.nil? || name.include?("[]")) ? values : values.last
   end
 
-  # Raises an exception if the URI is not +absolute?+.
+  # Raises an exception if the URI is not +absolute?+.  Otherwise,
+  # returns the URI.
   #
   # @return [self]
   # @raise [RuntimeError]

@@ -1,57 +1,68 @@
 class Grubby::Scraper
 
   # Defines an attribute reader method named by +field+.  During
-  # +initialize+, the given block is called, and the attribute is set to
+  # {initialize}, the given block is called, and the attribute is set to
   # the block's return value.
   #
-  # By default, if the block's return value is nil, an exception will be
-  # raised.  To prevent this behavior, specify +optional: true+.
+  # By default, raises an exception if the block's return value is nil.
+  # To prevent this behavior, set the +:optional+ option to true.
+  # Alternatively, the block can be conditionally evaluated, based on
+  # another method's return value, using the +:if+ or +:unless+ options.
   #
-  # The block may also be evaluated conditionally, based on another
-  # method's return value, using the +:if+ or +:unless+ options.
-  #
-  # @example
+  # @example Default behavior
   #   class GreetingScraper < Grubby::Scraper
-  #     scrapes(:salutation) do
-  #       source[/\A(hello|good morning)\b/i]
-  #     end
-  #
-  #     scrapes(:recipient, optional: true) do
-  #       source[/\A#{salutation} ([a-z ]+)/i, 1]
+  #     scrapes(:name) do
+  #       source[/Hello (\w+)/, 1]
   #     end
   #   end
   #
   #   scraper = GreetingScraper.new("Hello World!")
-  #   scraper.salutation  # == "Hello"
-  #   scraper.recipient   # == "World"
+  #   scraper.name  # == "World"
   #
-  #   scraper = GreetingScraper.new("Good morning!")
-  #   scraper.salutation  # == "Good morning"
-  #   scraper.recipient   # == nil
+  #   scraper = GreetingScraper.new("Hello!")  # raises Grubby::Scraper::Error
   #
-  #   scraper = GreetingScraper.new("Hey!")  # raises Grubby::Scraper::Error
-  #
-  # @example
-  #   class EmbeddedUrlScraper < Grubby::Scraper
-  #     scrapes(:url, optional: true){ source[%r"\bhttps?://\S+"] }
-  #
-  #     scrapes(:domain, if: :url){ url[%r"://([^/]+)/", 1] }
+  # @example Optional scraped value
+  #   class GreetingScraper < Grubby::Scraper
+  #     scrapes(:name, optional: true) do
+  #       source[/Hello (\w+)/, 1]
+  #     end
   #   end
   #
-  #   scraper = EmbeddedUrlScraper.new("visit https://example.com/foo for details")
-  #   scraper.url     # == "https://example.com/foo"
-  #   scraper.domain  # == "example.com"
+  #   scraper = GreetingScraper.new("Hello World!")
+  #   scraper.name  # == "World"
   #
-  #   scraper = EmbeddedUrlScraper.new("visit our website for details")
-  #   scraper.url     # == nil
-  #   scraper.domain  # == nil
+  #   scraper = GreetingScraper.new("Hello!")
+  #   scraper.name  # == nil
+  #
+  # @example Conditional scraped value
+  #   class GreetingScraper < Grubby::Scraper
+  #     def hello?
+  #       source.start_with?("Hello ")
+  #     end
+  #
+  #     scrapes(:name, if: :hello?) do
+  #       source[/Hello (\w+)/, 1]
+  #     end
+  #   end
+  #
+  #   scraper = GreetingScraper.new("Hello World!")
+  #   scraper.name  # == "World"
+  #
+  #   scraper = GreetingScraper.new("Hello!")  # raises Grubby::Scraper::Error
+  #
+  #   scraper = GreetingScraper.new("How are you?")
+  #   scraper.name  # == nil
   #
   # @param field [Symbol, String]
   # @param options [Hash]
-  # @option options :optional [Boolean]
-  # @option options :if [Symbol]
-  # @option options :unless [Symbol]
-  # @yield []
+  # @option options :optional [Boolean] (false)
+  #   Whether the block should be allowed to return a nil value
+  # @option options :if [Symbol] (nil)
+  #   Name of predicate method that determines if the block should be
+  #   evaluated
+  # @option options :unless [Symbol] (nil)
+  #   Name of predicate method that determines if the block should not
+  #   be evaluated
   # @yieldreturn [Object]
   # @return [void]
   def self.scrapes(field, **options, &block)
@@ -88,16 +99,16 @@ class Grubby::Scraper
     end
   end
 
-  # Fields defined by {scrapes}.
+  # Fields defined via {scrapes}.
   #
   # @return [Array<Symbol>]
   def self.fields
     @fields ||= self == Grubby::Scraper ? [] : self.superclass.fields.dup
   end
 
-  # Instantiates the Scraper class with the resource specified by +url+.
+  # Instantiates the Scraper class with the resource indicated by +url+.
   # This method acts as a default factory method, and provides a
-  # standard interface for specialized overrides.
+  # standard interface for overrides.
   #
   # @example Default factory method
   #   class PostPageScraper < Grubby::PageScraper
@@ -107,12 +118,12 @@ class Grubby::Scraper
   #   PostPageScraper.scrape("https://example.com/posts/42")
   #     # == PostPageScraper.new($grubby.get("https://example.com/posts/42"))
   #
-  # @example Specialized factory method
+  # @example Override factory method
   #   class PostApiScraper < Grubby::JsonScraper
   #     # ...
   #
-  #     def self.scrapes(url, agent = $grubby)
-  #       api_url = url.sub(%r"//example.com/(.+)", '//api.example.com/\1.json')
+  #     def self.scrape(url, agent = $grubby)
+  #       api_url = url.to_s.sub(%r"//example.com/(.+)", '//api.example.com/\1.json')
   #       super(api_url, agent)
   #     end
   #   end
@@ -123,54 +134,65 @@ class Grubby::Scraper
   # @param url [String, URI]
   # @param agent [Mechanize]
   # @return [Grubby::Scraper]
+  # @raise [Grubby::Scraper::Error]
+  #   if any {Scraper.scrapes} blocks fail
   def self.scrape(url, agent = $grubby)
     self.new(agent.get(url))
   end
 
   # Iterates a series of pages, starting at +start+.  The Scraper class
-  # is instantiated with each page, and each instance is passed to the
-  # given block.  Subsequent pages in the series are determined by
-  # invoking the +next_method+ method on each previous scraper instance.
+  # is instantiated with each page, and each Scraper instance is passed
+  # to the given block.  Subsequent pages in the series are determined
+  # by invoking the +next_method+ method on each Scraper instance.
   #
-  # Iteration stops when the +next_method+ method returns nil.  If the
+  # Iteration stops when the +next_method+ method returns falsy.  If the
   # +next_method+ method returns a String or URI, that value will be
   # treated as the URL of the next page.  Otherwise that value will be
   # treated as the page itself.
   #
-  # @example
+  # @example Iterate from page object
   #   class PostsIndexScraper < Grubby::PageScraper
-  #     scrapes(:page_param){ page.uri.query_param("page") }
-  #
   #     def next
   #       page.link_with(text: "Next >")&.click
   #     end
   #   end
   #
   #   PostsIndexScraper.each("https://example.com/posts?page=1") do |scraper|
-  #     scraper.page_param  # == "1", "2", "3", ...
+  #     scraper.page.uri.query  # == "page=1", "page=2", "page=3", ...
   #   end
   #
-  # @example
+  # @example Iterate from URI
   #   class PostsIndexScraper < Grubby::PageScraper
-  #     scrapes(:page_param){ page.uri.query_param("page") }
+  #     def next
+  #       page.link_with(text: "Next >")&.to_absolute_uri
+  #     end
+  #   end
   #
+  #   PostsIndexScraper.each("https://example.com/posts?page=1") do |scraper|
+  #     scraper.page.uri.query  # == "page=1", "page=2", "page=3", ...
+  #   end
+  #
+  # @example Specifying the iteration method
+  #   class PostsIndexScraper < Grubby::PageScraper
   #     scrapes(:next_uri, optional: true) do
   #       page.link_with(text: "Next >")&.to_absolute_uri
   #     end
   #   end
   #
   #   PostsIndexScraper.each("https://example.com/posts?page=1", next_method: :next_uri) do |scraper|
-  #     scraper.page_param  # == "1", "2", "3", ...
+  #     scraper.page.uri.query  # == "page=1", "page=2", "page=3", ...
   #   end
   #
   # @param start [String, URI, Mechanize::Page, Mechanize::File]
   # @param agent [Mechanize]
   # @param next_method [Symbol]
-  # @yield [scraper]
   # @yieldparam scraper [Grubby::Scraper]
   # @return [void]
   # @raise [NoMethodError]
-  #   if Scraper class does not implement +next_method+
+  #   if the Scraper class does not define the method indicated by
+  #   +next_method+
+  # @raise [Grubby::Scraper::Error]
+  #   if any {Scraper.scrapes} blocks fail
   def self.each(start, agent = $grubby, next_method: :next)
     unless self.method_defined?(next_method)
       raise NoMethodError.new(nil, next_method), "#{self} does not define `#{next_method}`"
@@ -187,22 +209,22 @@ class Grubby::Scraper
     end
   end
 
-  # The object being scraped.  Typically a Mechanize pluggable parser
-  # such as +Mechanize::Page+.
+  # The object being scraped.  Typically an instance of a Mechanize
+  # pluggable parser such as +Mechanize::Page+.
   #
   # @return [Object]
   attr_reader :source
 
-  # Collected errors raised during {initialize} by blocks passed to
-  # {scrapes}, indexed by field name.  If {initialize} did not raise
-  # +Grubby::Scraper::Error+, this Hash will be empty.
+  # Collected errors raised during {initialize} by {Scraper.scrapes}
+  # blocks, indexed by field name.  This Hash will be empty if
+  # {initialize} did not raise a +Grubby::Scraper::Error+.
   #
-  # @return [Hash<Symbol, StandardError>]
+  # @return [Hash{Symbol => StandardError}]
   attr_reader :errors
 
   # @param source
   # @raise [Grubby::Scraper::Error]
-  #   if any scraped values result in error
+  #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
     @source = source
     @scraped = {}
@@ -230,22 +252,25 @@ class Grubby::Scraper
 
   # Returns all scraped values as a Hash.
   #
-  # @return [Hash<Symbol, Object>]
+  # @return [Hash{Symbol => Object}]
   def to_h
     @scraped.dup
   end
 
   class Error < RuntimeError
+    # @!visibility private
     BACKTRACE_CLEANER = ActiveSupport::BacktraceCleaner.new.tap do |cleaner|
       cleaner.add_silencer do |line|
         line.include?(__dir__) && line.include?("scraper.rb:")
       end
     end
 
+    # The Scraper that raised this Error.
+    #
     # @return [Grubby::Scraper]
-    #   The Scraper that raised this error.
     attr_accessor :scraper
 
+    # @!visibility private
     def initialize(scraper)
       self.scraper = scraper
 
@@ -269,6 +294,7 @@ class Grubby::Scraper
     end
   end
 
+  # @!visibility private
   class FieldValueRequiredError < RuntimeError
     def initialize(field)
       super("`#{field}` is nil but is not marked as optional")
