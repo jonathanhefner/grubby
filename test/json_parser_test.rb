@@ -2,14 +2,6 @@ require "test_helper"
 
 class GrubbyJsonParserTest < Minitest::Test
 
-  def setup
-    @original_json_parse_options = Grubby::JsonParser.json_parse_options.dup
-  end
-
-  def teardown
-    Grubby::JsonParser.json_parse_options.replace(@original_json_parse_options)
-  end
-
   def test_initialize
     uri = URI("http://localhost")
     data = [{ "key1" => "val1" }, { "key2" => "val2" }]
@@ -32,23 +24,12 @@ class GrubbyJsonParserTest < Minitest::Test
     end
   end
 
-  def test_initialize_with_json_parse_options
-    Grubby::JsonParser.json_parse_options[:symbolize_names] = true
-    data = [{ key1: "val1" }, { key2: "val2" }]
-    parser = Grubby::JsonParser.new(nil, nil, data.to_json, nil, nil)
+  def test_json_parsing_is_safe
+    require "json/add/complex"
+    body = JSON.dump(Complex(0, 1))
+    assert_instance_of Complex, JSON.load(body) # sanity check
 
-    assert_equal data, parser.json
-  end
-
-  def test_json_parse_options_writer
-    options = { max_nesting: 9001 }
-    Grubby::JsonParser.json_parse_options = options
-
-    assert_equal options, Grubby::JsonParser.json_parse_options
-  end
-
-  def test_json_parse_options_defaults_are_safe
-    refute Grubby::JsonParser.json_parse_options[:create_additions]
+    refute_instance_of Complex, Grubby::JsonParser.new(nil, nil, body).json
   end
 
 end
