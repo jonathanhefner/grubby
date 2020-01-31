@@ -5,5 +5,4 @@ rvm:
   - 2.7
 
 gemfile:
-  - gemfiles/activesupport-5.0.gemfile
   - gemfiles/activesupport-6.0.gemfile
