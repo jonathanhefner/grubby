@@ -9,7 +9,7 @@ class Grubby::JsonScraper < Grubby::Scraper
   # @raise [Grubby::Scraper::Error]
   #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
-    @json = source.assert_kind_of!(Grubby::JsonParser).json
+    @json = source.assert!(Grubby::JsonParser).json
     super
   end
 

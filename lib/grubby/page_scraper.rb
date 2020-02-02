@@ -9,7 +9,7 @@ class Grubby::PageScraper < Grubby::Scraper
   # @raise [Grubby::Scraper::Error]
   #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
-    @page = source.assert_kind_of!(Mechanize::Page)
+    @page = source.assert!(Mechanize::Page)
     super
   end
 
