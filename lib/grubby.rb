@@ -146,9 +146,9 @@ class Grubby < Mechanize
   end
 
   # Ensures only-once processing of the resource indicated by +uri+ for
-  # the specified +purpose+.  The given block is executed if and only if
-  # the Grubby instance has not recorded a previous call to +fulfill+
-  # for the same resource and purpose.
+  # the specified +purpose+.  The given block is executed and the result
+  # is returned if and only if the Grubby instance has not recorded a
+  # previous call to +fulfill+ for the same resource and purpose.
   #
   # Note that the resource is identified by both its URI and its content
   # hash.  The latter prevents superfluous and rearranged URI query
@@ -164,26 +164,30 @@ class Grubby < Mechanize
   #   grubby = Grubby.new
   #
   #   grubby.fulfill("https://example.com/posts") do |page|
-  #     # will be executed (first time "/posts")
+  #     "first time"
   #   end
+  #   # == "first time"
   #
   #   grubby.fulfill("https://example.com/posts") do |page|
-  #     # will not be executed (previously processed "/posts" URI)
+  #     "already seen" # not evaluated
   #   end
+  #   # == nil
   #
   #   grubby.fulfill("https://example.com/posts?page=1") do |page|
-  #     # will not be executed (previously processed "/posts" content hash)
+  #     "already seen content hash" # not evaluated
   #   end
+  #   # == nil
   #
   #   grubby.fulfill("https://example.com/posts", "again!") do |page|
-  #     # will be executed (new purpose for "/posts")
+  #     "already seen, but new purpose"
   #   end
+  #   # == "already seen, but new purpose"
   #
   # @param uri [URI, String]
   # @param purpose [String]
   # @yieldparam resource [Mechanize::Page, Mechanize::File, Mechanize::Download, ...]
-  # @return [Boolean]
-  #   Whether the given block was executed
+  # @yieldreturn [Object]
+  # @return [Object, nil]
   # @raise [Mechanize::ResponseCodeError]
   #   if fetching the resource results in error (see +Mechanize#get+)
   def fulfill(uri, purpose = "")
@@ -200,13 +204,13 @@ class Grubby < Mechanize
     unprocessed = add_fulfilled(resource.uri, purpose, series) &
       add_fulfilled("content hash: #{resource.content_hash}", purpose, series)
 
-    yield resource if unprocessed
+    result = yield resource if unprocessed
 
     CSV.open(journal, "a") do |csv|
       series.each{|entry| csv << entry }
     end if journal
 
-    unprocessed
+    result
   end
 
 

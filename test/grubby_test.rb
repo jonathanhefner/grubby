@@ -92,6 +92,15 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
+  def test_fulfill_returns_block_result
+    expected = "foo"
+    actual = silence_logging do
+      Grubby.new.fulfill(make_uris(1).first){ expected }
+    end
+
+    assert_equal expected, actual
+  end
+
   def test_fulfill_with_different_pages
     uris = make_uris(2)
     uris.last.path = "/form_test.html"
@@ -203,17 +212,11 @@ class GrubbyTest < Mechanize::TestCase
   end
 
   def fulfill_resultant_uris(requests, grubby = Grubby.new)
-    resultant_uris = []
-
     silence_logging do
-      requests.each do |args|
-        previous_count = resultant_uris.length
-        visited = grubby.fulfill(*args){|page| resultant_uris << page.uri }
-        assert_equal (resultant_uris.length > previous_count), !!visited
-      end
+      requests.map do |args|
+        grubby.fulfill(*args){|page| page.uri }
+      end.compact
     end
-
-    resultant_uris
   end
 
 end
