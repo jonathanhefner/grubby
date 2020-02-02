@@ -29,6 +29,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "gorge", "~> 1.0"
   spec.add_dependency "mechanize", "~> 2.7"
   spec.add_dependency "mini_sanity", "~> 2.0"
-  spec.add_dependency "pleasant_path", "~> 1.1"
+  spec.add_dependency "pleasant_path", "~> 2.0"
   spec.add_dependency "ryoba", "~> 1.0"
 end
