@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activesupport", ">= 6.0"
-  spec.add_dependency "casual_support", "~> 3.0"
+  spec.add_dependency "casual_support", "~> 4.0"
   spec.add_dependency "gorge", "~> 1.0"
   spec.add_dependency "mechanize", "~> 2.7"
   spec.add_dependency "mini_sanity", "~> 1.0"
