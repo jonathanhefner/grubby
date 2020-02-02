@@ -50,9 +50,9 @@ end
 ## Core API
 
 - [Grubby](https://www.rubydoc.info/gems/grubby/Grubby)
+  - [#fulfill](https://www.rubydoc.info/gems/grubby/Grubby:fulfill)
   - [#get_mirrored](https://www.rubydoc.info/gems/grubby/Grubby:get_mirrored)
   - [#ok?](https://www.rubydoc.info/gems/grubby/Grubby:ok%3F)
-  - [#singleton](https://www.rubydoc.info/gems/grubby/Grubby:singleton)
   - [#time_between_requests](https://www.rubydoc.info/gems/grubby/Grubby:time_between_requests)
 - [Scraper](https://www.rubydoc.info/gems/grubby/Grubby/Scraper)
   - [.each](https://www.rubydoc.info/gems/grubby/Grubby/Scraper.each)

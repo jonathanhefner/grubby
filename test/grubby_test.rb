@@ -92,59 +92,59 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
-  def test_singleton_with_different_pages
+  def test_fulfill_with_different_pages
     uris = make_uris(2)
     uris.last.path = "/form_test.html"
 
-    assert_equal uris, singleton_resultant_uris(uris)
+    assert_equal uris, fulfill_resultant_uris(uris)
   end
 
-  def test_singleton_with_same_url
+  def test_fulfill_with_same_url
     uris = make_uris(1) * 2
 
-    assert_equal uris.uniq, singleton_resultant_uris(uris)
+    assert_equal uris.uniq, fulfill_resultant_uris(uris)
   end
 
-  def test_singleton_with_same_page_content
+  def test_fulfill_with_same_page_content
     uris = make_uris(2)
 
-    assert_equal uris.take(1), singleton_resultant_uris(uris)
+    assert_equal uris.take(1), fulfill_resultant_uris(uris)
   end
 
-  def test_singleton_with_different_purposes
+  def test_fulfill_with_different_purposes
     purposes = 2.times.map{|i| "purpose #{i}" }
     uris = make_uris(1) * purposes.length
 
-    assert_equal uris, singleton_resultant_uris(uris.zip(purposes))
+    assert_equal uris, fulfill_resultant_uris(uris.zip(purposes))
   end
 
-  def test_singleton_journal
+  def test_journal_fulfill
     uris = make_uris(2)
 
     in_tmpdir do
-      refute_empty singleton_resultant_uris(uris, Grubby.new("journal.txt"))
-      assert_empty singleton_resultant_uris(uris, Grubby.new("journal.txt"))
+      refute_empty fulfill_resultant_uris(uris, Grubby.new("journal.txt"))
+      assert_empty fulfill_resultant_uris(uris, Grubby.new("journal.txt"))
     end
   end
 
-  def test_singleton_journal_with_different_pages
+  def test_journal_fulfill_with_different_pages
     uris = make_uris(2)
     uris.last.path = "/form_test.html"
 
     in_tmpdir do
-      refute_empty singleton_resultant_uris(uris.take(1), Grubby.new("journal.txt"))
-      refute_empty singleton_resultant_uris(uris.drop(1), Grubby.new("journal.txt"))
+      refute_empty fulfill_resultant_uris(uris.take(1), Grubby.new("journal.txt"))
+      refute_empty fulfill_resultant_uris(uris.drop(1), Grubby.new("journal.txt"))
     end
   end
 
-  def test_singleton_journal_with_different_purposes
+  def test_journal_fulfill_with_different_purposes
     purposes = 2.times.map{|i| "purpose #{i}" }
     uris = make_uris(1) * purposes.length
     requests = uris.zip(purposes)
 
     in_tmpdir do
-      refute_empty singleton_resultant_uris(requests, Grubby.new("journal.txt"))
-      assert_empty singleton_resultant_uris(requests, Grubby.new("journal.txt"))
+      refute_empty fulfill_resultant_uris(requests, Grubby.new("journal.txt"))
+      assert_empty fulfill_resultant_uris(requests, Grubby.new("journal.txt"))
     end
   end
 
@@ -164,18 +164,18 @@ class GrubbyTest < Mechanize::TestCase
 
       grubby.journal = journal_a.to_s
       assert_equal journal_a, grubby.journal
-      refute_empty singleton_resultant_uris(uris, grubby)
+      refute_empty fulfill_resultant_uris(uris, grubby)
 
       grubby.journal = journal_b
       assert_equal journal_b, grubby.journal
-      refute_empty singleton_resultant_uris(uris, grubby)
+      refute_empty fulfill_resultant_uris(uris, grubby)
 
       grubby.journal = journal_a
-      assert_empty singleton_resultant_uris(uris, grubby)
+      assert_empty fulfill_resultant_uris(uris, grubby)
 
       grubby.journal = nil
       assert_nil grubby.journal
-      refute_empty singleton_resultant_uris(uris, grubby)
+      refute_empty fulfill_resultant_uris(uris, grubby)
     end
   end
 
@@ -202,13 +202,13 @@ class GrubbyTest < Mechanize::TestCase
     end
   end
 
-  def singleton_resultant_uris(requests, grubby = Grubby.new)
+  def fulfill_resultant_uris(requests, grubby = Grubby.new)
     resultant_uris = []
 
     silence_logging do
       requests.each do |args|
         previous_count = resultant_uris.length
-        visited = grubby.singleton(*args){|page| resultant_uris << page.uri }
+        visited = grubby.fulfill(*args){|page| resultant_uris << page.uri }
         assert_equal (resultant_uris.length > previous_count), !!visited
       end
     end

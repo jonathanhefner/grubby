@@ -31,14 +31,14 @@ class Grubby < Mechanize
   attr_accessor :time_between_requests
 
   # Journal file used to ensure only-once processing of resources by
-  # {singleton} across multiple program runs.
+  # {fulfill} across multiple program runs.
   #
   # @return [Pathname, nil]
   attr_reader :journal
 
   # @param journal [Pathname, String]
   #   Optional journal file used to ensure only-once processing of
-  #   resources by {singleton} across multiple program runs
+  #   resources by {fulfill} across multiple program runs
   def initialize(journal = nil)
     super()
 
@@ -74,7 +74,7 @@ class Grubby < Mechanize
   end
 
   # Sets the journal file used to ensure only-once processing of
-  # resources by {singleton} across multiple program runs.  Setting the
+  # resources by {fulfill} across multiple program runs.  Setting the
   # journal file will clear the in-memory list of previously-processed
   # resources, and, if the journal file exists, load the list from file.
   #
@@ -82,9 +82,9 @@ class Grubby < Mechanize
   # @return [Pathname]
   def journal=(path)
     @journal = path&.to_pathname&.touch_file
-    @seen = if @journal
+    @fulfilled = if @journal
         require "csv"
-        CSV.read(@journal).map{|row| SingletonKey.new(*row) }.to_set
+        CSV.read(@journal).map{|row| FulfilledEntry.new(*row) }.to_set
       else
         Set.new
       end
@@ -147,7 +147,7 @@ class Grubby < Mechanize
 
   # Ensures only-once processing of the resource indicated by +uri+ for
   # the specified +purpose+.  The given block is executed if and only if
-  # the Grubby instance has not recorded a previous call to +singleton+
+  # the Grubby instance has not recorded a previous call to +fulfill+
   # for the same resource and purpose.
   #
   # Note that the resource is identified by both its URI and its content
@@ -163,19 +163,19 @@ class Grubby < Mechanize
   # @example
   #   grubby = Grubby.new
   #
-  #   grubby.singleton("https://example.com/posts") do |page|
+  #   grubby.fulfill("https://example.com/posts") do |page|
   #     # will be executed (first time "/posts")
   #   end
   #
-  #   grubby.singleton("https://example.com/posts") do |page|
+  #   grubby.fulfill("https://example.com/posts") do |page|
   #     # will not be executed (previously processed "/posts" URI)
   #   end
   #
-  #   grubby.singleton("https://example.com/posts?page=1") do |page|
+  #   grubby.fulfill("https://example.com/posts?page=1") do |page|
   #     # will not be executed (previously processed "/posts" content hash)
   #   end
   #
-  #   grubby.singleton("https://example.com/posts", "again!") do |page|
+  #   grubby.fulfill("https://example.com/posts", "again!") do |page|
   #     # will be executed (new purpose for "/posts")
   #   end
   #
@@ -186,41 +186,43 @@ class Grubby < Mechanize
   #   Whether the given block was executed
   # @raise [Mechanize::ResponseCodeError]
   #   if fetching the resource results in error (see +Mechanize#get+)
-  def singleton(uri, purpose = "")
+  def fulfill(uri, purpose = "")
     series = []
 
     uri = uri.to_absolute_uri
-    return if try_skip_singleton(uri, purpose, series)
+    return unless add_fulfilled(uri, purpose, series)
 
     normalized_uri = normalize_uri(uri)
-    return if try_skip_singleton(normalized_uri, purpose, series)
+    return unless add_fulfilled(normalized_uri, purpose, series)
 
     $log.info("Fetch #{normalized_uri}")
     resource = get(normalized_uri)
-    skip = try_skip_singleton(resource.uri, purpose, series) |
-      try_skip_singleton("content hash: #{resource.content_hash}", purpose, series)
+    unprocessed = add_fulfilled(resource.uri, purpose, series) &
+      add_fulfilled("content hash: #{resource.content_hash}", purpose, series)
 
-    yield resource unless skip
+    yield resource if unprocessed
 
     CSV.open(journal, "a") do |csv|
-      series.each{|singleton_key| csv << singleton_key }
+      series.each{|entry| csv << entry }
     end if journal
 
-    !skip
+    unprocessed
   end
 
 
   private
 
   # @!visibility private
-  SingletonKey = Struct.new(:purpose, :target)
+  FulfilledEntry = Struct.new(:purpose, :target)
 
-  def try_skip_singleton(target, purpose, series)
-    series << SingletonKey.new(purpose, target.to_s)
-    if series.uniq!.nil? && !@seen.add?(series.last)
-      seen_info = series.length > 1 ? "seen #{series.last.target}" : "seen"
-      $log.info("Skip #{series.first.target} (#{seen_info})")
+  def add_fulfilled(target, purpose, series)
+    series << FulfilledEntry.new(purpose, target.to_s)
+    if (series.uniq!) || @fulfilled.add?(series.last)
       true
+    else
+      $log.info("Skip #{series.first.target}" \
+        " (seen#{" #{series.last.target}" unless series.length == 1})")
+      false
     end
   end
 
