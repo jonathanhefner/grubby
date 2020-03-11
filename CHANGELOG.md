@@ -1,3 +1,15 @@
+## 2.0.0
+
+* [BREAKING] Drop support for Active Support < 6.0
+* [BREAKING] Require casual_support ~> 4.0
+* [BREAKING] Require mini_sanity ~> 2.0
+* [BREAKING] Require pleasant_path ~> 2.0
+* [BREAKING] Remove `JsonParser.json_parse_options`
+  * Use `::JSON.load_default_options` instead
+* [BREAKING] Rename `Grubby#singleton` to `Grubby#fulfill`
+* [BREAKING] Change `Grubby#fulfill` to return block's result
+
+
 ## 1.2.1
 
 * Add `JsonParser#mech` attribute for parity with `Mechanize::Page#mech`
