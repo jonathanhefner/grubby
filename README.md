@@ -219,4 +219,4 @@ Run `rake test` to run the tests.
 
 ## License
 
-[MIT License](https://opensource.org/licenses/MIT)
+[MIT License](LICENSE.txt)
