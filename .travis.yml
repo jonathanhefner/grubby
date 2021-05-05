@@ -1,8 +1,0 @@
-language: ruby
-
-rvm:
-  - 2.6
-  - 2.7
-
-gemfile:
-  - gemfiles/activesupport-6.0.gemfile
