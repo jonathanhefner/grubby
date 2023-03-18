@@ -199,17 +199,7 @@ documentation for a complete API listing.
 
 ## Installation
 
-Install the [gem](https://rubygems.org/gems/grubby):
-
-```bash
-$ gem install grubby
-```
-
-Then require in your Ruby code:
-
-```ruby
-require "grubby"
-```
+Install the [`grubby` gem](https://rubygems.org/gems/grubby).
 
 
 ## Contributing
