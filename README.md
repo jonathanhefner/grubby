@@ -149,16 +149,6 @@ end
 Some of those methods are listed below.  See each gem's documentation
 for a complete API listing.
 
-- [casual_support](https://rubygems.org/gems/casual_support)
-  ([docs](https://www.rubydoc.info/gems/casual_support/))
-  - [Enumerable#index_to](https://www.rubydoc.info/gems/casual_support/Enumerable:index_to)
-  - [String#after](https://www.rubydoc.info/gems/casual_support/String:after)
-  - [String#after_last](https://www.rubydoc.info/gems/casual_support/String:after_last)
-  - [String#before](https://www.rubydoc.info/gems/casual_support/String:before)
-  - [String#before_last](https://www.rubydoc.info/gems/casual_support/String:before_last)
-  - [String#between](https://www.rubydoc.info/gems/casual_support/String:between)
-  - [Time#to_hms](https://www.rubydoc.info/gems/casual_support/Time:to_hms)
-  - [Time#to_ymd](https://www.rubydoc.info/gems/casual_support/Time:to_ymd)
 - [gorge](https://rubygems.org/gems/gorge)
   ([docs](https://www.rubydoc.info/gems/gorge/))
   - [Pathname#file_crc32](https://www.rubydoc.info/gems/gorge/Pathname:file_crc32)
@@ -203,6 +193,14 @@ gem's documentation for a complete API listing.
   - [Object#presence](https://www.rubydoc.info/gems/activesupport/Object:presence)
   - [String#blank?](https://www.rubydoc.info/gems/activesupport/String:blank%3F)
   - [String#squish](https://www.rubydoc.info/gems/activesupport/String:squish)
+- [casual_support](https://rubygems.org/gems/casual_support)
+  ([docs](https://www.rubydoc.info/gems/casual_support/))
+  - [Enumerable#index_to](https://www.rubydoc.info/gems/casual_support/Enumerable:index_to)
+  - [String#after](https://www.rubydoc.info/gems/casual_support/String:after)
+  - [String#after_last](https://www.rubydoc.info/gems/casual_support/String:after_last)
+  - [String#before](https://www.rubydoc.info/gems/casual_support/String:before)
+  - [String#before_last](https://www.rubydoc.info/gems/casual_support/String:before_last)
+  - [String#between](https://www.rubydoc.info/gems/casual_support/String:between)
 
 
 ## Installation

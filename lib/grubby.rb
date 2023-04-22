@@ -1,4 +1,3 @@
-require "casual_support"
 require "gorge"
 require "mechanize"
 require "mini_sanity"
