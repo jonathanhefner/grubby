@@ -258,13 +258,6 @@ class Grubby::Scraper
   end
 
   class Error < RuntimeError
-    # @!visibility private
-    BACKTRACE_CLEANER = ActiveSupport::BacktraceCleaner.new.tap do |cleaner|
-      cleaner.add_silencer do |line|
-        line.include?(__dir__) && line.include?("scraper.rb:")
-      end
-    end
-
     # The Scraper that raised this Error.
     #
     # @return [Grubby::Scraper]
@@ -278,13 +271,20 @@ class Grubby::Scraper
         reject{|field, error| error.is_a?(FieldScrapeFailedError) }.
         map do |field, error|
           "* `#{field}` (#{error.class})\n" +
-            error.message.indent(2) + "\n\n" +
-            BACKTRACE_CLEANER.clean(error.backtrace).join("\n").indent(4) + "\n"
+            error.message.gsub(/^/, "  ") + "\n\n" +
+            clean_backtrace(error.backtrace).join("\n").gsub(/^/, "    ") + "\n"
         end.
         join("\n")
 
       super("Failed to scrape the following fields:\n#{listing}")
     end
+
+    private
+      def clean_backtrace(backtrace)
+        backtrace.reject do |line|
+          line.start_with?(__dir__) && line.include?("scraper.rb:")
+        end
+      end
   end
 
   # @!visibility private

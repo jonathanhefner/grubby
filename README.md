@@ -145,17 +145,10 @@ end
 
 ## Auxiliary API
 
-*grubby* loads several gems that extend Ruby objects with utility
-methods.  Some of those methods are listed below.  See each gem's
-documentation for a complete API listing.
+*grubby* loads a few gems that extend Ruby objects with utility methods.
+Some of those methods are listed below.  See each gem's documentation
+for a complete API listing.
 
-- [Active Support](https://rubygems.org/gems/activesupport)
-  ([docs](https://www.rubydoc.info/gems/activesupport/))
-  - [Enumerable#index_by](https://www.rubydoc.info/gems/activesupport/Enumerable:index_by)
-  - [File.atomic_write](https://www.rubydoc.info/gems/activesupport/File:atomic_write)
-  - [Object#presence](https://www.rubydoc.info/gems/activesupport/Object:presence)
-  - [String#blank?](https://www.rubydoc.info/gems/activesupport/String:blank%3F)
-  - [String#squish](https://www.rubydoc.info/gems/activesupport/String:squish)
 - [casual_support](https://rubygems.org/gems/casual_support)
   ([docs](https://www.rubydoc.info/gems/casual_support/))
   - [Enumerable#index_to](https://www.rubydoc.info/gems/casual_support/Enumerable:index_to)
@@ -195,6 +188,21 @@ documentation for a complete API listing.
   - [Nokogiri::XML::Searchable#ancestors!](https://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:ancestors%21)
   - [Nokogiri::XML::Searchable#at!](https://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:at%21)
   - [Nokogiri::XML::Searchable#search!](https://www.rubydoc.info/gems/ryoba/Nokogiri/XML/Searchable:search%21)
+
+
+## Recommended Gems
+
+The following gems will extend Ruby objects with utility methods that
+can be useful when web scraping.  Example methods are listed; see each
+gem's documentation for a complete API listing.
+
+- [Active Support](https://rubygems.org/gems/activesupport)
+  ([docs](https://www.rubydoc.info/gems/activesupport/))
+  - [Enumerable#index_by](https://www.rubydoc.info/gems/activesupport/Enumerable:index_by)
+  - [File.atomic_write](https://www.rubydoc.info/gems/activesupport/File:atomic_write)
+  - [Object#presence](https://www.rubydoc.info/gems/activesupport/Object:presence)
+  - [String#blank?](https://www.rubydoc.info/gems/activesupport/String:blank%3F)
+  - [String#squish](https://www.rubydoc.info/gems/activesupport/String:squish)
 
 
 ## Installation

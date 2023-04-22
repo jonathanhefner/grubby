@@ -246,11 +246,11 @@ class GrubbyScraperTest < Minitest::Test
     end
 
     def next_uri
-      self.next.try{|next_url| URI(next_url + "#next_uri") }
+      self.next&.then{|next_url| URI(next_url + "#next_uri") }
     end
 
     def next_page
-      self.next.try{|next_url| source.mech.get(next_url + "#next_page") }
+      self.next&.then{|next_url| source.mech.get(next_url + "#next_page") }
     end
   end
 

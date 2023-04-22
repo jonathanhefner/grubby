@@ -1,4 +1,3 @@
-require "active_support/all"
 require "casual_support"
 require "gorge"
 require "mechanize"

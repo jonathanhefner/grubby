@@ -1,3 +1,5 @@
+require "json"
+
 class Grubby::JsonParser < Mechanize::File
 
   # The parsed JSON data.
