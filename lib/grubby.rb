@@ -1,6 +1,5 @@
 require "gorge"
 require "mechanize"
-require "mini_sanity"
 require "pleasant_path"
 require "ryoba"
 

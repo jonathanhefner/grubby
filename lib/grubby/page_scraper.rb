@@ -9,7 +9,10 @@ class Grubby::PageScraper < Grubby::Scraper
   # @raise [Grubby::Scraper::Error]
   #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
-    @page = source.assert!(Mechanize::Page)
+    unless source.is_a?(Mechanize::Page)
+      raise ArgumentError, "source must be a Mechanize::Page object"
+    end
+    @page = source
     super
   end
 

@@ -154,13 +154,6 @@ for a complete API listing.
   - [Pathname#file_crc32](https://www.rubydoc.info/gems/gorge/Pathname:file_crc32)
   - [Pathname#file_md5](https://www.rubydoc.info/gems/gorge/Pathname:file_md5)
   - [Pathname#file_sha1](https://www.rubydoc.info/gems/gorge/Pathname:file_sha1)
-- [mini_sanity](https://rubygems.org/gems/mini_sanity)
-  ([docs](https://www.rubydoc.info/gems/mini_sanity/))
-  - [Enumerator#result!](https://www.rubydoc.info/gems/mini_sanity/Enumerator:result%21)
-  - [Enumerator#results!](https://www.rubydoc.info/gems/mini_sanity/Enumerator:results%21)
-  - [Object#assert!](https://www.rubydoc.info/gems/mini_sanity/Object:assert%21)
-  - [Object#refute!](https://www.rubydoc.info/gems/mini_sanity/Object:refute%21)
-  - [String#match!](https://www.rubydoc.info/gems/mini_sanity/String:match%21)
 - [pleasant_path](https://rubygems.org/gems/pleasant_path)
   ([docs](https://www.rubydoc.info/gems/pleasant_path/))
   - [Pathname#available_name](https://www.rubydoc.info/gems/pleasant_path/Pathname:available_name)
@@ -201,6 +194,13 @@ gem's documentation for a complete API listing.
   - [String#before](https://www.rubydoc.info/gems/casual_support/String:before)
   - [String#before_last](https://www.rubydoc.info/gems/casual_support/String:before_last)
   - [String#between](https://www.rubydoc.info/gems/casual_support/String:between)
+- [mini_sanity](https://rubygems.org/gems/mini_sanity)
+  ([docs](https://www.rubydoc.info/gems/mini_sanity/))
+  - [Enumerator#result!](https://www.rubydoc.info/gems/mini_sanity/Enumerator:result%21)
+  - [Enumerator#results!](https://www.rubydoc.info/gems/mini_sanity/Enumerator:results%21)
+  - [Object#assert!](https://www.rubydoc.info/gems/mini_sanity/Object:assert%21)
+  - [Object#refute!](https://www.rubydoc.info/gems/mini_sanity/Object:refute%21)
+  - [String#match!](https://www.rubydoc.info/gems/mini_sanity/String:match%21)
 
 
 ## Installation

@@ -9,7 +9,10 @@ class Grubby::JsonScraper < Grubby::Scraper
   # @raise [Grubby::Scraper::Error]
   #   if any {Scraper.scrapes} blocks fail
   def initialize(source)
-    @json = source.assert!(Grubby::JsonParser).json
+    unless source.is_a?(Grubby::JsonParser)
+      raise ArgumentError, "source must be a Grubby::JsonParser object"
+    end
+    @json = source.json
     super
   end
 
