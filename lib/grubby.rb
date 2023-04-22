@@ -1,6 +1,7 @@
+require "pathname"
+
 require "gorge"
 require "mechanize"
-require "pleasant_path"
 require "ryoba"
 
 require_relative "grubby/version"
@@ -78,13 +79,18 @@ class Grubby < Mechanize
   # @param path [Pathname, String, nil]
   # @return [Pathname]
   def journal=(path)
-    @journal = path&.to_pathname&.make_file
-    @fulfilled = if @journal
-        require "csv"
-        CSV.read(@journal).map{|row| FulfilledEntry.new(*row) }.to_set
-      else
-        Set.new
+    if path
+      @journal = Pathname(path)
+      @journal.dirname.mkpath
+      require "csv"
+      @fulfilled = CSV.open(@journal, "a+") do |csv|
+        csv.each.map{|row| FulfilledEntry.new(*row) }.to_set
       end
+    else
+      @journal = nil
+      @fulfilled = Set.new
+    end
+
     @journal
   end
 
