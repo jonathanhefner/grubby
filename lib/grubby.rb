@@ -5,7 +5,6 @@ require "mechanize"
 require "ryoba"
 
 require_relative "grubby/version"
-require_relative "grubby/log"
 
 require_relative "grubby/core_ext/string"
 require_relative "grubby/core_ext/uri"
@@ -20,6 +19,21 @@ require_relative "grubby/mechanize/parser"
 class Grubby < Mechanize
 
   VERSION = GRUBBY_VERSION
+
+  class << self
+    # Logger used by Grubby.
+    #
+    # @return [Logger]
+    def logger
+      @logger ||= Logger.new($stderr).tap do |logger|
+        logger.formatter = -> (severity, time, progname, msg) do
+          "[#{time.strftime "%Y-%m-%d %H:%M:%S"}] #{severity} #{msg}\n"
+        end
+      end
+    end
+
+    attr_writer :logger
+  end
 
   # The minimum amount of time enforced between requests, in seconds.
   # If the value is a Range, a random number within the Range is chosen
@@ -141,8 +155,8 @@ class Grubby < Mechanize
       if i >= mirror_uris.length
         raise
       else
-        $log.debug("Mirror failed (code #{e.response_code}): #{mirror_uris[i - 1]}")
-        $log.debug("Try mirror: #{mirror_uris[i]}")
+        Grubby.logger.debug("Mirror failed (code #{e.response_code}): #{mirror_uris[i - 1]}")
+        Grubby.logger.debug("Try mirror: #{mirror_uris[i]}")
         retry
       end
     end
@@ -202,7 +216,7 @@ class Grubby < Mechanize
     normalized_uri = normalize_uri(uri)
     return unless add_fulfilled(normalized_uri, purpose, series)
 
-    $log.info("Fetch #{normalized_uri}")
+    Grubby.logger.info("Fetch #{normalized_uri}")
     resource = get(normalized_uri)
     unprocessed = add_fulfilled(resource.uri, purpose, series) &
       add_fulfilled("content hash: #{resource.content_hash}", purpose, series)
@@ -227,7 +241,7 @@ class Grubby < Mechanize
     if (series.uniq!) || @fulfilled.add?(series.last)
       true
     else
-      $log.info("Skip #{series.first.target}" \
+      Grubby.logger.info("Skip #{series.first.target}" \
         " (seen#{" #{series.last.target}" unless series.length == 1})")
       false
     end
@@ -235,7 +249,7 @@ class Grubby < Mechanize
 
   def normalize_uri(uri)
     uri = uri.dup
-    $log.warn("Ignore ##{uri.fragment} in #{uri}") if uri.fragment
+    Grubby.logger.warn("Ignore ##{uri.fragment} in #{uri}") if uri.fragment
     uri.fragment = nil
     uri.path = uri.path.chomp("/")
     uri

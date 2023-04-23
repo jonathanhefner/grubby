@@ -35,12 +35,12 @@ end
 class Minitest::Test
 
   def silence_logging
-    log_level = $log.level
-    $log.level = Logger::Severity::FATAL
+    log_level = Grubby.logger.level
+    Grubby.logger.level = Logger::Severity::FATAL
     begin
       result = yield
     ensure
-      $log.level = log_level
+      Grubby.logger.level = log_level
     end
     result
   end

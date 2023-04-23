@@ -6,6 +6,26 @@ class GrubbyTest < Mechanize::TestCase
     refute_nil Grubby::VERSION
   end
 
+  def test_logger_is_a_logger
+    assert_kind_of Logger, Grubby.logger
+  end
+
+  def test_logger_logs_to_stderr_by_default
+    _out, err = capture_subprocess_io do
+      Grubby.logger.error("testing123")
+    end
+
+    assert_match "testing123", err
+  end
+
+  def test_logger_can_be_overridden
+    logger = Logger.new($stdout)
+    original_logger, Grubby.logger = Grubby.logger, logger
+    assert_same logger, Grubby.logger
+  ensure
+    Grubby.logger = original_logger
+  end
+
   def test_default_constructor
     assert_kind_of Mechanize, Grubby.new
   end

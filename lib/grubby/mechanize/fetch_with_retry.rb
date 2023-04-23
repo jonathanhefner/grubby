@@ -25,9 +25,9 @@ class Mechanize::HTTP::Agent
 
       # otherwise, shutdown the persistent HTTP connection and try again
       retry_count += 1
-      $log.warn("#{e.message} (#{e.class}).  Retry in #{retry_count} seconds.")
+      Grubby.logger.warn("#{e.message} (#{e.class}).  Retry in #{retry_count} seconds.")
       sleep(retry_count) # incremental backoff to allow server to self-correct
-      $log.warn("Retry #{http_method.to_s.upcase} #{uri}")
+      Grubby.logger.warn("Retry #{http_method.to_s.upcase} #{uri}")
       retry
     end
   end

@@ -83,7 +83,7 @@ class Grubby::Scraper
             @scraped[field] = instance_eval(&block)
             if @scraped[field].nil?
               raise FieldValueRequiredError.new(field) unless options[:optional]
-              $log.debug("#{self.class}##{field} is nil")
+              Grubby.logger.debug("#{self.class}##{field} is nil")
             end
           end
         rescue RuntimeError, IndexError => e
